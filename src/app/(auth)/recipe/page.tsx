@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, Row, Col, Typography, Spin, Empty, Button, message, Upload, Modal, Input, Pagination, Popconfirm, Tabs, Table } from 'antd';
+import { Card, Row, Col, Typography, Spin, Empty, Button, message, Upload, Modal, Input, Pagination, Popconfirm, Tabs, Table, Radio } from 'antd';
 import Link from 'next/link';
 import axios from 'axios';
 import { UploadOutlined, LoadingOutlined, SearchOutlined, DeleteOutlined } from '@ant-design/icons';
 import TabPane from 'antd/es/tabs/TabPane';
 import { RcFile } from 'antd/es/upload';
-
+import { response } from 'express';
+import {formatDate} from '@/utils/formatDate'
 const { Title, Text } = Typography;
 
 interface Recipe {
@@ -24,7 +25,8 @@ interface FileData {
 }
 
 
-const Recipe = () => {
+const Recipes = () => {
+  console.log("abc")
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [uploading, setUploading] = useState<boolean>(false);
@@ -36,11 +38,11 @@ const Recipe = () => {
   const [searchTerm, setSearchTerm] = useState<string>(''); // State for search term
   const [modalType, setModalType] = useState('success'); // 'success' or 'failed'
   const [showPageElements, setShowPageElements] = useState(true); // State to control visibility
-
+const [position, setPosition] = useState<'success'| 'failed'>('success');
   // State for success and failure uploads
-  const [successUploads, setSuccessUploads] = useState<string[]>([]);
-  const [failedUploads, setFailedUploads] = useState<string[]>([]);
-
+  // const [successUploads, setSuccessUploads] = useState<string[]>([]);
+  
+// let [sucessful,setSuccessful]=useState<string[]>([]);
   // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(18); // Adjust page size here
@@ -51,6 +53,7 @@ const Recipe = () => {
   useEffect(() => {
     fetchRecipes();
   }, []);
+  
 
   const fetchRecipes = async () => {
     setLoading(true);
@@ -77,6 +80,16 @@ const Recipe = () => {
       message.error('Failed to delete recipe');
     }
   };
+  const [files, setFiles] = useState<File[]>([]);
+  const handleFile = async (file: File) => {
+    let temp = await files
+    temp.push(file)
+    setFiles(temp)
+  }
+
+  useEffect(() => {
+    console.log(files)
+  }, [files]);
 
   const handleExport = async () => {
     if (!startDate || !endDate) {
@@ -109,7 +122,69 @@ const Recipe = () => {
       setIsExporting(false);
     }
   };
+
+  interface dataType {
+    srNo: number;
+    title: string;
+    created_at: Date; 
+  };
+  const [dataSource, setDataSource]= useState<dataType[]>([]);
   
+  const columns = [
+    {
+      title: 'Sr. No.',
+      dataIndex: 'srNo',
+      key: 'srNo',
+    },
+    {
+      title: 'FileName',
+      dataIndex: 'title',
+      key: 'title',  
+    },
+    {
+      title: 'Date',
+      dataIndex: 'created_at',
+      key: 'created_at',
+    },
+  ];
+
+  // const dataA = []
+
+  
+  const handleFailedFiles = async () => {
+    try{
+      const response = await axios.get('/api/getFailedFiles/');
+      const data = response.data;
+      // const result = await response.data;
+      // data.files.map((file:any,index:number)=>{dataSource.title=file.title,dataSource.created_at=file.created_at})
+      // console.log(data)
+      let dataSet:any[] = []
+      data.files.forEach((file:any,index:number)=>{
+        // console.log(file)
+        let data = {
+          srNo: index+1,
+          title: file.title,
+          created_at: formatDate(file.created_at)
+        }
+        // console.log(data)
+        dataSet.push(data);
+        
+      })
+      setDataSource(dataSet)
+      console.log(dataSource)
+// console.log(result);
+      // // reponse.data.map((x)=>failedFiles.created_at=x.created_at)
+      // console.log(failedFiles);
+    } catch (error){
+      message.error("Failed to fetch failed files");
+    }
+  }
+
+  // useEffect(() => {
+  //   handleFailedFiles();
+  // }, []);
+
+
   // const handleUpload = async (files: File[]) => {
   
   //   const formData = new FormData();
@@ -153,13 +228,62 @@ const Recipe = () => {
   //     setUploading(false);
   //   }
 
-  
+  let saveBulkRecipes = async (fileDataArray:any) => {
+
+    
+      let successNames: string[][] = [];
+      let duplicates: string[][] = [];
+      // Step 2: Batch save recipes
+      const batchSize = 50; // Set batch size to 50 for optimal performance
+ 
+        try {
+
+         
+          const reponse = await axios.post('/api/saveBulkRecipes/', fileDataArray, {
+            headers: { 'Content-Type': 'application/json' },
+          });
+          console.log(reponse)
+          // Collect successful file names for this batch
+          duplicates.push(reponse.data.message.duplicates)
+          successNames.push(reponse.data.message.successful)
+          duplicates[0].length>0?duplicates[0].forEach((x) => {message.error(`${x} is duplicate`)  }):null
+          successNames[0].length>0?successNames[0].forEach((x) => {message.success(`${x} is successfully uploaded`)}):null
+          successNames = [];
+          setIsModalOpen(false);
+          fetchRecipes();
+
+        return reponse;
+        } catch (error) {
+          console.error('Error uploading or saving files:', error);
+
+        }finally {
+          // Show page elements after processing is done
+          setShowPageElements(true);
+          setUploading(false);
+        }
+
+  }
+
+  let saveFailedUploads = async (fileDataArray:any) => {
+
+    try {
+      const reponse = await axios.post('/api/saveFailedUploads/', fileDataArray, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      message.error(reponse.data.message);
+    } catch (error) {
+      console.error('Error uploading or saving files:', error);
+    }
+  }
+
+
+
+
   const handleUpload = async (files: File[]) => {
+    
     const formData = new FormData();
     files.forEach(file => formData.append('files', file)); // Add files to formData
-  
-    try {
-      setUploading(true);
+    setUploading(true);
   
       // Hide page elements while uploading
       setShowPageElements(false);
@@ -168,48 +292,21 @@ const Recipe = () => {
       const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-  
-      const fileDataArray = uploadResponse.data.recipes;
-  
-      const successNames: string[] = [];
-      const failedNames: string[] = [];
-  
-      // Step 2: Batch save recipes
-      const batchSize = 50; // Set batch size to 50 for optimal performance
-      for (let i = 0; i < fileDataArray.length; i += batchSize) {
-        const batch = fileDataArray.slice(i, i + batchSize);
-  
-        try {
-          await axios.post('/api/saveBulkRecipes/', batch, {
-            headers: { 'Content-Type': 'application/json' },
-          });
-  
-          // Collect successful file names for this batch
-          const batchSuccessNames = files.slice(i, i + batchSize).map(file => file.name);
-          successNames.push(...batchSuccessNames);
-        } catch (error) {
-          console.error(`Error saving batch starting with ${files[i].name}:`, error);
-          const batchFailedNames = files.slice(i, i + batchSize).map(file => file.name);
-          failedNames.push(...batchFailedNames);
-        }
+
+      let failedNames: string[] = [];
+// console.log(uploadResponse.data)
+      if(uploadResponse.data.failed_files){
+        failedNames.push(uploadResponse.data.failed_files)
+        saveFailedUploads(failedNames[0])
+
       }
-  
-      // Step 3: Update success and failure states
-      setSuccessUploads(prev => [...prev, ...successNames]);
-      setFailedUploads(prev => [...prev, ...failedNames]);
-  
-      message.success(`Recipes were saved successfully: ${successNames.join(', ')}`);
-      setIsModalOpen(false);
-      fetchRecipes();
-    } catch (error) {
-      console.error('Error uploading or saving files:', error);
-      message.error('Error uploading or saving files');
-    } finally {
-      // Show page elements after processing is done
-      setShowPageElements(true);
-      setUploading(false);
-    }
-  };
+      if(uploadResponse.data.recipes){
+        const result = await saveBulkRecipes(uploadResponse.data.recipes)
+
+      }
+
+
+  }
   
 
   const showModal = () => setIsModalOpen(true);
@@ -247,9 +344,6 @@ const Recipe = () => {
     }
   };
   
-  console.log("success", successUploads)
-  console.log("failed", failedUploads)
-
   return (
 
     <>
@@ -259,14 +353,20 @@ const Recipe = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <Title level={1} style={{ margin: 0}}>Recipes</Title>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <Radio.Group value={position} onChange={(e) => setPosition(e.target.value)}>
+            <div style={{display: 'flex'}}>
+          <Radio.Button value="success" >success</Radio.Button>
+          <Radio.Button onClick={handleFailedFiles} value="failed" >failed</Radio.Button>
+          </div>
+        </Radio.Group>
+        <>{console.log(position)}</>
             <Input
               placeholder="Search by recipe name"
               prefix={<SearchOutlined />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <input type="date" onChange={(e) => setStartDate(e.target.value)} />
-            <input type="date" onChange={(e) => setEndDate(e.target.value)} />
+            
             <Button type="primary" onClick={handleExport} disabled={uploading} style={{ backgroundColor: '#797FE7', borderColor: '#797FE7' }}>
               {isExporting ? <Spin indicator={exportSpinner} /> : 'Export'}
             </Button>
@@ -283,20 +383,28 @@ const Recipe = () => {
                 Delete All
               </Button>
             </Popconfirm>
+            <div style={{display: 'flex', gap: '0.5rem',position: 'absolute',left: '70.5vw',top: '7vw',marginBottom: '1rem'}}>
+              <label style={{color: '#797FE7'}}>From: </label>
+            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setStartDate(e.target.value)} />
+            <label style={{color: '#797FE7'}}>To: </label>
+            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setEndDate(e.target.value)} />
+            </div>
           </div>
         </div>
-
         <Modal title="Upload File" visible={isModalOpen} onCancel={handleCancel} footer={null}>
           {uploading ? (
             <center><Spin size="large" style={{ textAlign: 'center', padding: '2rem' }} /></center>
           ) : (
-            <Upload beforeUpload={(file) => handleUpload([file])} accept=".xlsx, .xls" multiple>
+            <>
+            <Upload beforeUpload={(file) => handleFile(file)} accept=".xlsx, .xls" multiple>
               <Button icon={<UploadOutlined />}>Click to Upload</Button>
             </Upload>
+              <Button type="primary" onClick={()=>{handleUpload(files)}} style={{ marginTop: '1rem' }}>Confirm</Button>
+            </>
           )}
         </Modal>
 
-        
+       <> {position === 'success' ?(<>
         {Object.keys(groupedRecipes).length === 0 ? (
           <Empty description="No recipes found" />
         ) : (
@@ -346,11 +454,15 @@ const Recipe = () => {
 
           </div>
 
-
-          
-
-          
         )}
+       </>):position === 'failed'?(
+        
+        <>
+        {/* {console.log(dataSource)} */}
+        <Table columns={columns} dataSource={dataSource} />
+       </>
+      ):null}</>
+        
         </div>
       )}
     </>
@@ -358,4 +470,4 @@ const Recipe = () => {
   );
 };
 
-export default Recipe;
+export default Recipes;

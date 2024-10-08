@@ -92,6 +92,8 @@
 // }
 
 
+import { message } from 'antd';
+import { fail } from 'assert';
 import { NextRequest, NextResponse } from 'next/server';
 import { Client } from 'pg';
 
@@ -109,20 +111,41 @@ export async function POST(request: NextRequest) {
   });
 
   await client.connect();
-
+  let failed:any[]=[];
   try {
     // Parse the JSON body
     const fullData = await request.json();
-    console.log(fullData);
+    // console.log(fullData);
+let duplicates:any[]=[];
+let successful:any[]=[]; 
 
     // Check if fullData is an array (multiple recipes) or a single object (one recipe)
     const recipes = Array.isArray(fullData) ? fullData : [fullData];
 
-    // Start a transaction
-    await client.query('BEGIN');
 
+    console.log(recipes);
     for (const recipe of recipes) {
-      // Save recipe details to the 'recipes' table
+      try{
+          // Start a transaction
+      await client.query('BEGIN');
+      //checks is the recipe name already exists
+    const existsResult = await client.query(
+      'SELECT EXISTS (SELECT 1 FROM recipes WHERE Recipe = $1)',
+      [recipe.recipe_no]
+
+      
+  );
+      // Commit the transaction
+      await client.query('COMMIT');
+      // if(existsResult.rows[0].exists){
+      //   return NextResponse.json({ success: false, message: 'Recipe name already exists' }, { status: 400 });
+      // }
+      existsResult.rows[0].exists?duplicates.push(recipe.file_name ):null;
+      
+      // console.log('recipe',existsResult.rows[0].exists);
+if(!existsResult.rows[0].exists){
+  await client.query('BEGIN');
+        // Save recipe details to the 'recipes' table
       const result = await client.query(
         `INSERT INTO recipes (Load_Size, Machine_Type, Finish, Fabric, Recipe, Fno, name)
          VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
@@ -185,17 +208,24 @@ export async function POST(request: NextRequest) {
       });
 
       await Promise.all(stepPromises);
+      successful.push(recipe.file_name);
+          // Commit the transaction
+    await client.query('COMMIT');
+    }
+  }catch (error) {
+    failed.push(recipe.file_name);
+    // console.log(failed);
+    console.error('Error saving recipe data:', error);
+    await client.query('ROLLBACK'); // Rollback in case of error
+  }
     }
 
-    // Commit the transaction
-    await client.query('COMMIT');
-
-    return NextResponse.json({ success: true });
+// console.log(duplicates);
+    return NextResponse.json({sucess: false, message: {duplicates,successful} },{ status: 200 })
 
   } catch (error) {
     console.error('Error saving recipe data:', error);
-    await client.query('ROLLBACK'); // Rollback in case of error
-    return NextResponse.json({ success: false, message: 'Failed to save recipe data' }, { status: 500 });
+    return NextResponse.json({ success: false, message: failed }, { status: 500 });
   } finally {
     await client.end(); // Close the client connection
   }

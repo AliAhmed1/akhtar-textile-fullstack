@@ -21,25 +21,49 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setChemicalOption
       const response = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      console.log('Upload Response:', response.data);
+      console.log("ABC")
+      console.log('Upload Response:', response);
       const recipe = response.data.recipes[0];
       console.log(recipe.recipe_no);
       setRecipe1(recipe);
+ 
+      const recipesDataForTable = () => {
+        let data: any[] = [];
+        recipe.step.forEach((step:any,index:number)=>{
+          const baseData = {
+            key: index,
+            step: step.step_no,
+            action: step.action,
+            minutes: step.minutes,
+            liters: step.litres,
+            rpm: step.rpm,
+            centigrade: step.temperature,
+        };
+          if(step.chemicals.length > 0) {
+            step.chemicals.forEach((chemical:any) => {
+              data.push({
+                ...baseData,
+                chemicalName:chemical.recipe_name,
+              percentage: chemical.percentage,
+              dosage: chemical.dosage,
+              });
+            })
+          } else {
+             data.push({
+              ...baseData,
+              chemicalName:step.chemical,
+              percentage: step.chemical,
+              dosage: step.chemical,
+             });
+            }
+            
+          })
+        return data
 
-      const recipesDataForTable = recipe.step.map((step: any, index: number) => ({
-        key: index,
-        step: step.step_no,
-        action: step.action,
-        minutes: step.minutes,
-        liters: step.litres,
-        rpm: step.rpm,
-        chemicalName: step.chemicals.map((chemical: any) => chemical.recipe_name),
-        percentage: step.chemicals.map((chemical: any) => chemical.percentage),
-        dosage: step.chemicals.map((chemical: any) => chemical.dosage),
-        centigrade: step.temperature,
-      }));
+      }
 
+
+      console.log(recipesDataForTable);
       setTableData(recipesDataForTable);
       form.setFieldsValue({
         fileName: recipe.file_name,

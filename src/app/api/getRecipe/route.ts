@@ -11,7 +11,7 @@ const pool = new Pool({ connectionString: process.env.NEXT_PUBLIC_DATABASE_URL }
 export async function GET() {
   try {
     const result = await pool.query('SELECT * FROM "recipes"');
-    console.log(">>>>>>>",result)
+    // console.log(">>>>>>>",result)
     return NextResponse.json(result.rows);
   } catch (error) {
     console.error(error);
