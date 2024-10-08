@@ -93,6 +93,7 @@
 
 
 import { message } from 'antd';
+import { fail } from 'assert';
 import { NextRequest, NextResponse } from 'next/server';
 import { Client } from 'pg';
 
@@ -110,19 +111,19 @@ export async function POST(request: NextRequest) {
   });
 
   await client.connect();
-
+  let failed:any[]=[];
   try {
     // Parse the JSON body
     const fullData = await request.json();
     // console.log(fullData);
 let duplicates:any[]=[];
 let successful:any[]=[]; 
-let failed:any[]=[];
+
     // Check if fullData is an array (multiple recipes) or a single object (one recipe)
     const recipes = Array.isArray(fullData) ? fullData : [fullData];
 
 
-
+    console.log(recipes);
     for (const recipe of recipes) {
       try{
           // Start a transaction
@@ -140,9 +141,10 @@ let failed:any[]=[];
       //   return NextResponse.json({ success: false, message: 'Recipe name already exists' }, { status: 400 });
       // }
       existsResult.rows[0].exists?duplicates.push(recipe.file_name ):null;
-      await client.query('BEGIN');
+      
       // console.log('recipe',existsResult.rows[0].exists);
 if(!existsResult.rows[0].exists){
+  await client.query('BEGIN');
         // Save recipe details to the 'recipes' table
       const result = await client.query(
         `INSERT INTO recipes (Load_Size, Machine_Type, Finish, Fabric, Recipe, Fno, name)
@@ -212,19 +214,18 @@ if(!existsResult.rows[0].exists){
     }
   }catch (error) {
     failed.push(recipe.file_name);
-    console.log(failed);
+    // console.log(failed);
     console.error('Error saving recipe data:', error);
     await client.query('ROLLBACK'); // Rollback in case of error
   }
     }
-
 
 // console.log(duplicates);
     return NextResponse.json({sucess: false, message: {duplicates,successful} },{ status: 200 })
 
   } catch (error) {
     console.error('Error saving recipe data:', error);
-    return NextResponse.json({ success: false, message: 'Failed to save recipe data' }, { status: 500 });
+    return NextResponse.json({ success: false, message: failed }, { status: 500 });
   } finally {
     await client.end(); // Close the client connection
   }
