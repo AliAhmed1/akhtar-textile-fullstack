@@ -366,7 +366,12 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            
+            <div className= "flex gap-2 md:absolute md:left-[70.5vw] md:top-[7vw] md:mb-4 lg:static lg:mb-0" >
+              <label style={{color: '#797FE7'}}>From: </label>
+            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setStartDate(e.target.value)} />
+            <label style={{color: '#797FE7'}}>To: </label>
+            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setEndDate(e.target.value)} />
+            </div>
             <Button type="primary" onClick={handleExport} disabled={uploading} style={{ backgroundColor: '#797FE7', borderColor: '#797FE7' }}>
               {isExporting ? <Spin indicator={exportSpinner} /> : 'Export'}
             </Button>
@@ -383,12 +388,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
                 Delete All
               </Button>
             </Popconfirm>
-            <div style={{display: 'flex', gap: '0.5rem',position: 'absolute',left: '70.5vw',top: '7vw',marginBottom: '1rem'}}>
-              <label style={{color: '#797FE7'}}>From: </label>
-            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setStartDate(e.target.value)} />
-            <label style={{color: '#797FE7'}}>To: </label>
-            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setEndDate(e.target.value)} />
-            </div>
+            
           </div>
         </div>
         <Modal title="Upload File" visible={isModalOpen} onCancel={handleCancel} footer={null}>
@@ -398,8 +398,9 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
             <>
             <Upload beforeUpload={(file) => handleFile(file)} accept=".xlsx, .xls" multiple>
               <Button icon={<UploadOutlined />}>Click to Upload</Button>
+              <Button type="primary" className='ml-3' onClick={()=>{handleUpload(files)}} >Confirm</Button>
             </Upload>
-              <Button type="primary" onClick={()=>{handleUpload(files)}} style={{ marginTop: '1rem' }}>Confirm</Button>
+              
             </>
           )}
         </Modal>
