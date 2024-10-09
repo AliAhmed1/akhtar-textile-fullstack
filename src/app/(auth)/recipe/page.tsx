@@ -282,7 +282,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 
 
   const handleUpload = async (files: File[]) => {
-    console.log("handleFailedFiles",files.length)
+    // console.log("handleFailedFiles",files.length)
     const formData = new FormData();
     files.forEach(file => formData.append('files', file)); // Add files to formData
     setUploading(true);
