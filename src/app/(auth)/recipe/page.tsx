@@ -26,7 +26,7 @@ interface FileData {
 
 
 const Recipes = () => {
-  console.log("abc")
+  // console.log("abc")
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [uploading, setUploading] = useState<boolean>(false);
@@ -85,10 +85,11 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
     let temp = await files
     temp.push(file)
     setFiles(temp)
+
   }
 
   useEffect(() => {
-    console.log(files)
+    // console.log(files)
   }, [files]);
 
   const handleExport = async () => {
@@ -152,6 +153,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 
   
   const handleFailedFiles = async () => {
+
     try{
       const response = await axios.get('/api/getFailedFiles/');
       const data = response.data;
@@ -242,7 +244,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
           const reponse = await axios.post('/api/saveBulkRecipes/', fileDataArray, {
             headers: { 'Content-Type': 'application/json' },
           });
-          console.log(reponse)
+          // console.log(reponse)
           // Collect successful file names for this batch
           duplicates.push(reponse.data.message.duplicates)
           successNames.push(reponse.data.message.successful)
@@ -280,7 +282,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 
 
   const handleUpload = async (files: File[]) => {
-    
+    // console.log("handleFailedFiles",files.length)
     const formData = new FormData();
     files.forEach(file => formData.append('files', file)); // Add files to formData
     setUploading(true);
@@ -294,8 +296,8 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
       });
 
       let failedNames: string[] = [];
-// console.log(uploadResponse.data)
-      if(uploadResponse.data.failed_files){
+// console.log('uploadResponse',uploadResponse)
+      if(uploadResponse.data.failed_files.length > 0){
         failedNames.push(uploadResponse.data.failed_files)
         saveFailedUploads(failedNames[0])
 
@@ -305,7 +307,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 
       }
 
-
+      files.length=0;
   }
   
 
@@ -359,14 +361,19 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
           <Radio.Button onClick={handleFailedFiles} value="failed" >failed</Radio.Button>
           </div>
         </Radio.Group>
-        <>{console.log(position)}</>
+        {/* <>{console.log(position)}</> */}
             <Input
               placeholder="Search by recipe name"
               prefix={<SearchOutlined />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            
+            <div className= "flex gap-2 md:absolute md:left-[70.5vw] md:top-[7vw] md:mb-4 lg:static lg:mb-0" >
+              <label style={{color: '#797FE7'}}>From: </label>
+            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setStartDate(e.target.value)} />
+            <label style={{color: '#797FE7'}}>To: </label>
+            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setEndDate(e.target.value)} />
+            </div>
             <Button type="primary" onClick={handleExport} disabled={uploading} style={{ backgroundColor: '#797FE7', borderColor: '#797FE7' }}>
               {isExporting ? <Spin indicator={exportSpinner} /> : 'Export'}
             </Button>
@@ -383,12 +390,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
                 Delete All
               </Button>
             </Popconfirm>
-            <div style={{display: 'flex', gap: '0.5rem',position: 'absolute',left: '70.5vw',top: '7vw',marginBottom: '1rem'}}>
-              <label style={{color: '#797FE7'}}>From: </label>
-            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setStartDate(e.target.value)} />
-            <label style={{color: '#797FE7'}}>To: </label>
-            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setEndDate(e.target.value)} />
-            </div>
+            
           </div>
         </div>
         <Modal title="Upload File" visible={isModalOpen} onCancel={handleCancel} footer={null}>
@@ -399,7 +401,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
             <Upload beforeUpload={(file) => handleFile(file)} accept=".xlsx, .xls" multiple>
               <Button icon={<UploadOutlined />}>Click to Upload</Button>
             </Upload>
-              <Button type="primary" onClick={()=>{handleUpload(files)}} style={{ marginTop: '1rem' }}>Confirm</Button>
+            <Button type="primary" className='mt-4' onClick={()=>{handleUpload(files)}} >Confirm</Button>
             </>
           )}
         </Modal>
