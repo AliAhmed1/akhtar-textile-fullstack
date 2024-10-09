@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
+import { cookies } from 'next/headers';
 export const dynamic = 'force-dynamic';
 
 // Secret key for JWT (use environment variable for better security)
 const JWT_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET || "";
 
 // Function to get the user details (id) from the JWT token
-export function GET(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // Get the 'token' cookie from the request headers
     const token = request.cookies.get('token')?.value;
@@ -16,18 +17,21 @@ export function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Token not found' }, { status: 401 });
     }
 
-    // Verify and decode the token
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-
     // Extract user id from the token payload
-    const { id } = decodedToken as { id: string };
+    const decodedToken = jwt.verify(token, JWT_SECRET) as { id?: string };
 
+    // Check if the user ID is present in the token
+    const { id } = decodedToken;
+    if (!id) {
+      cookies().delete('token');
+      return NextResponse.json({ error: 'User ID not found in token' }, { status: 401 });
+    }
     // Return user details in the response
     return NextResponse.json({ id });
 
   } catch (error) {
     console.error("Invalid or missing token:", error);
-    // Return an error response if the token is invalid or an error occurs
+    cookies().delete('token');
     return NextResponse.json({ error: 'Invalid or missing token' }, { status: 401 });
   }
 }

@@ -5,7 +5,7 @@ import { Layout } from "antd";
 import AppHeader from "@/components/AppHeader/AppHeader";
 import Sider from "antd/es/layout/Sider";
 import { Content } from "antd/es/layout/layout";
-import AppSideMenu from "@/components/AppSideMenu/AppSideMenu";
+import AppSideServerCall from "@/components/AppSideMenu/AppSideServerCall";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,11 +14,13 @@ const inter = Inter({ subsets: ["latin"] });
 //   description: "Akhtar Textile App",
 // };
 
-export default function AuthenticatedLayout({
+
+export default async function AuthenticatedLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en">
       <head>
@@ -37,7 +39,7 @@ export default function AuthenticatedLayout({
                   height: "calc(100vh - 64px)",
                 }}
               >
-                <AppSideMenu />
+                <AppSideServerCall />
               </Sider>
               <Layout>
                 <Content

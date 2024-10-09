@@ -8,26 +8,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const pageLoadingSpinner = <LoadingOutlined style={{ fontSize: 48, color: '#800080' }} spin />;
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const response = await fetch('/api/checkAuth', {
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        setIsAuthenticated(true);
-      } else {
-        window.location.href = '/';
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  if (!isAuthenticated) {
-    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><Spin indicator={pageLoadingSpinner} /></div>;
-  }
-
   return (
     <div>
    <Row gutter={[24 , 24]}>

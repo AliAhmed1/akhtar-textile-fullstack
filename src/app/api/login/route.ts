@@ -51,16 +51,14 @@ export async function POST(request: NextRequest) {
 
     // Serialize the cookie
     const cookie = serialize('token', token, {
-      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60, // 1 hour
       path: '/',
     });
-
+    
     // Respond with the token and set the cookie
     const response = NextResponse.json({ token: token, message: "Logged in successfully" });
     response.headers.set('Set-Cookie', cookie); // Set the cookie header here
-
     return response;
 
   } catch (error) {

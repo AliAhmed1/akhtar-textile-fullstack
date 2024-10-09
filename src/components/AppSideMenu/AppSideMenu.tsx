@@ -14,57 +14,47 @@ import {
   BulbOutlined,
   UserOutlined,
   UploadOutlined,
-  ExperimentOutlined 
+  ExperimentOutlined
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { notification } from "antd";
 
-export default function AppSideMenu() {
+interface IAppSideMenu {
+  accessData: any;
+  userId: string | null;
+}
+
+
+const AppSideMenu: React.FC<IAppSideMenu> = ({ accessData, userId }) => {
   const pathname = usePathname();
   const [selectedKey, setSelectedKey] = useState("1");
-  const [openKeys, setOpenKeys] = useState<string[]>([]); 
+  const [openKeys, setOpenKeys] = useState<string[]>([]);
   const router = useRouter();
-  const [userId, setUserId] = useState<{ id: string} | null>(null);
   const [accessLevel, setAccessLevel] = useState<string[]>([]);
 
   // Fetch user information from token
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        const response = await fetch("/api/getToken", { method: "GET" });
 
-        if (response.ok) {
-          const data = await response.json();
-          setUserId(data); 
-          const user_Id = data.id;
-          const userDataResponse = await fetch(`/api/getAccessByUserId/${user_Id}`);
-          if (userDataResponse.ok) {
-            const userData = await userDataResponse.json();
-            const access =  userData.map((item: { accesslevels: any; }) => item.accesslevels);
-            const updatedAccessLevel = [...access,"Dashboard", "Logout"];
-            setAccessLevel(updatedAccessLevel);
-       
-          } 
 
-        } else {
-          console.error("Failed to fetch user:", response.statusText);
-        }
-      } catch (error) {
-        console.error("Failed to fetch user", error);
+      if (accessData) {
+        const userData = await accessData;
+        const access = userData.map((item: { accesslevels: any; }) => item.accesslevels);
+        const updatedAccessLevel = [...access, "Dashboard", "Logout"];
+        setAccessLevel(updatedAccessLevel);
       }
-
-
-
+      else {
+        console.error("Failed to fetch user:", accessData);
+      }
     };
 
     fetchUser();
 
 
- 
+
 
   }, []);
 
-  // console.log("accessLevel",accessLevel)            
 
 
   useEffect(() => {
@@ -72,23 +62,23 @@ export default function AppSideMenu() {
       setSelectedKey("2");
     } else if (pathname.startsWith("/recipe")) {
       setSelectedKey("12");
-      setOpenKeys(["3"]);  
+      setOpenKeys(["3"]);
     } else if (pathname.startsWith("/recipe")) {
       setSelectedKey("3");
-      setOpenKeys(["3"]);  
+      setOpenKeys(["3"]);
     } else if (pathname.startsWith("/upload-recipe")) {
       setSelectedKey("4");
-      setOpenKeys(["3"]);  
+      setOpenKeys(["3"]);
     } else if (pathname.startsWith("")) {
       setSelectedKey("5");
-      setOpenKeys(["5"]);  
+      setOpenKeys(["5"]);
     } else if (pathname.startsWith("/employees")) {
       setSelectedKey("10");
-      setOpenKeys(["5"]);  
+      setOpenKeys(["5"]);
     } else if (pathname.startsWith("/chemicals")) {
       setSelectedKey("15");
-      setOpenKeys(["5"]); 
-    }     
+      setOpenKeys(["5"]);
+    }
     else if (pathname.startsWith("/p-l")) {
       setSelectedKey("6");
     } else if (pathname.startsWith("/damco-data")) {
@@ -114,7 +104,6 @@ export default function AppSideMenu() {
           description: "You have successfully logged out.",
           placement: "topRight",
         });
-
         router.push("/");
       } else {
         console.error("Logout failed:", response.statusText);
@@ -176,7 +165,7 @@ export default function AppSideMenu() {
             <Link href="/chemicals" className="text-black">Chemicals</Link>
           ),
           key: "15",
-          icon: <ExperimentOutlined  />,
+          icon: <ExperimentOutlined />,
         },
 
       ],
@@ -198,7 +187,7 @@ export default function AppSideMenu() {
       key: "8",
       icon: <FileOutlined />,
     },
-   
+
     {
       label: <a onClick={handleLogout}>Logout</a>,
       key: "11",
@@ -208,7 +197,6 @@ export default function AppSideMenu() {
 
   const getFilteredMenuItems = (accessLevels: string[]) => {
     const hasAdminAccess = accessLevels.includes("Admin");
-    console.log("hasAdminAccess", hasAdminAccess);
 
     const reconstructedMenuItems = menuItems.reduce((acc, item) => {
       if (hasAdminAccess) {
@@ -251,7 +239,7 @@ export default function AppSideMenu() {
       mode="inline"
       items={availableMenuItems.map(item => ({
         ...item,
-        style: item.key === selectedKey[0] ? {color: "#797FE7" } : {}
+        style: item.key === selectedKey[0] ? { color: "#797FE7" } : {}
       }))}
       selectedKeys={[selectedKey]}
       openKeys={openKeys} // Handle open keys for submenus
@@ -259,4 +247,6 @@ export default function AppSideMenu() {
     />
   );
 }
+
+export default AppSideMenu;
 
