@@ -6,7 +6,6 @@ export async function POST(req: NextRequest) {
     // Clear the 'token' cookie
     const response = NextResponse.json({ message: 'Logged out successfully' });
     response.cookies.set('token', '', {
-    httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: -1, // Expire the cookie
     path: '/',
