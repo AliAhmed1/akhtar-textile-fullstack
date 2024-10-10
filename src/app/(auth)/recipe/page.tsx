@@ -252,7 +252,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
           successNames[0].length>0?successNames[0].forEach((x) => {message.success(`${x} is successfully uploaded`)}):null
           successNames = [];
           setIsModalOpen(false);
-          fetchRecipes();
+          
 
         return reponse;
         } catch (error) {
@@ -261,6 +261,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
         }finally {
           // Show page elements after processing is done
           setShowPageElements(true);
+          fetchRecipes();
           setUploading(false);
         }
 
@@ -368,7 +369,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <div className= "flex gap-2 md:absolute md:left-[70.5vw] md:top-[7vw] md:mb-4 lg:static lg:mb-0" >
+            <div className= "flex gap-2 md:absolute md:left-[70.5%] md:top-[10%] md:mb-4 lg:absolute lg:left-[76.5%] lg:top-[10.5%] xl:static xl:mb-0" >
               <label style={{color: '#797FE7'}}>From: </label>
             <input style={{textAlign: 'center'}} type="date" onChange={(e) => setStartDate(e.target.value)} />
             <label style={{color: '#797FE7'}}>To: </label>
@@ -398,10 +399,10 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
             <center><Spin size="large" style={{ textAlign: 'center', padding: '2rem' }} /></center>
           ) : (
             <>
-            <Upload beforeUpload={(file) => handleFile(file)} accept=".xlsx, .xls" multiple>
+            <Upload beforeUpload={(file) => handleUpload([file])} accept=".xlsx, .xls" multiple>
               <Button icon={<UploadOutlined />}>Click to Upload</Button>
             </Upload>
-            <Button type="primary" className='mt-4' onClick={()=>{handleUpload(files)}} >Confirm</Button>
+            {/* <Button type="primary" className='mt-4' onClick={()=>{handleUpload(files)}} >Confirm</Button> */}
             </>
           )}
         </Modal>
