@@ -84,6 +84,7 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setChemicalOption
   };
 
   return (
+    
     <Upload
       beforeUpload={handleUpload}
       accept=".xlsx, .xls"

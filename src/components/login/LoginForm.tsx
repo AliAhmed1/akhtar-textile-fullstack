@@ -1,6 +1,7 @@
 'use client';
 import React,{useEffect,useState} from 'react';
 import "../../app/globals.css";
+// import "./";
 import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation'; 
 import { message,Button } from 'antd';
@@ -80,8 +81,8 @@ const LoginForm: React.FC<ILoginForm> = ({userId}) => {
       {/* Main Content Section */}
       <div className="absolute w-[70%] bg-[#EBEFFF] h-screen">
         <div className="relative container mx-auto">
-          <div className="relative pt-[30%] pl-[25%]">
-            <div className="relative color-[#1A1A1A] ml-[17.5%] font-inter text-[2vh] font-[700] text-left">
+          <div className="relative md:pt-[30%] pl-[25%] lg:pt-[23%]">
+            <div className="relative color-[#1A1A1A] md:ml-[17.5%] font-inter md:text-[2vh] font-[700] md:text-left lg:text-[3.5vh] ">
               Welcome Back!
             </div>
 
@@ -96,7 +97,7 @@ const LoginForm: React.FC<ILoginForm> = ({userId}) => {
                       {...register("username")}
                       type="text"
                       id="username"
-                      className="px-[10px] w-[55%] border border-[#656ED3] rounded-lg text-sm"
+                      className="px-[10px] w-[55%] border border-[#656ED3] rounded-lg md:text-sm lg:text-lg"
                     />
                               <UserOutlined className="ml-2 text-[#656ED3] text-xl"/>
                   </div>
@@ -110,7 +111,7 @@ const LoginForm: React.FC<ILoginForm> = ({userId}) => {
                         {...register("password")}
                         type={showPassword ? "text" : "password"}
                         id="password"
-                        className="px-[10px] w-[55%] border border-[#656ED3] rounded-lg text-sm"
+                        className="px-[10px] w-[55%] border border-[#656ED3] md:rounded-lg md:text-sm lg:text-lg "
                       />
                       <button
                         type="button"
