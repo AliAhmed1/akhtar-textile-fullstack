@@ -9,6 +9,7 @@ import TabPane from 'antd/es/tabs/TabPane';
 import { RcFile } from 'antd/es/upload';
 import { response } from 'express';
 import {formatDate} from '@/utils/formatDate'
+import { get } from 'lodash';
 const { Title, Text } = Typography;
 
 interface Recipe {
@@ -41,7 +42,8 @@ const Recipes = () => {
 const [position, setPosition] = useState<'success'| 'failed'>('success');
   // State for success and failure uploads
   // const [successUploads, setSuccessUploads] = useState<string[]>([]);
-  
+  let [getRecipeCounter, setGetRecipeCounter] = useState<number>(0);
+  let [postRecipeCounter, setPostRecipeCounter] = useState<number>(0);
 // let [sucessful,setSuccessful]=useState<string[]>([]);
   // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -56,7 +58,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
   
 
   const fetchRecipes = async () => {
-    setLoading(true);
+    !loading && setLoading(true)
     try {
       const response = await fetch('/api/getRecipe', { cache: 'no-store' });
       if (!response.ok) throw new Error('Network response was not ok');
@@ -66,6 +68,8 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
       setError('Failed to fetch recipes');
       console.error('Failed to fetch recipes:', error);
     } finally {
+      getRecipeCounter > 0 ? setGetRecipeCounter(0):null;
+      postRecipeCounter > 0 ? setPostRecipeCounter(0):null;
       setLoading(false);
     }
   };
@@ -88,6 +92,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 
   }
 
+  
   useEffect(() => {
     // console.log(files)
   }, [files]);
@@ -159,7 +164,8 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
       const data = response.data;
       // const result = await response.data;
       // data.files.map((file:any,index:number)=>{dataSource.title=file.title,dataSource.created_at=file.created_at})
-      // console.log(data)
+      // console.log(response.data)
+      // data.
       let dataSet:any[] = []
       data.files.forEach((file:any,index:number)=>{
         // console.log(file)
@@ -251,6 +257,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
           duplicates[0].length>0?duplicates[0].forEach((x) => {message.error(`${x} is duplicate`)  }):null
           successNames[0].length>0?successNames[0].forEach((x) => {message.success(`${x} is successfully uploaded`)}):null
           successNames = [];
+          
           setIsModalOpen(false);
           
 
@@ -261,7 +268,6 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
         }finally {
           // Show page elements after processing is done
           setShowPageElements(true);
-          fetchRecipes();
           setUploading(false);
         }
 
@@ -287,27 +293,31 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
     const formData = new FormData();
     files.forEach(file => formData.append('files', file)); // Add files to formData
     setUploading(true);
-  
+  setLoading(true);
       // Hide page elements while uploading
       setShowPageElements(false);
-  
+
+      
       // Step 1: Upload files
       const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
+      getRecipeCounter++;
       let failedNames: string[] = [];
-// console.log('uploadResponse',uploadResponse)
+// console.log('uploadResponse',uploadResponse.data.recipes)
       if(uploadResponse.data.failed_files.length > 0){
+        // console.log("failed",uploadResponse.data.failed_files);
         failedNames.push(uploadResponse.data.failed_files)
         saveFailedUploads(failedNames[0])
-
+        postRecipeCounter++;
       }
-      if(uploadResponse.data.recipes){
+      if(uploadResponse.data.recipes.length > 0){
         const result = await saveBulkRecipes(uploadResponse.data.recipes)
-
+        postRecipeCounter++;
       }
-
+      console.log("counter1",getRecipeCounter,'counter2',postRecipeCounter)
+      getRecipeCounter === postRecipeCounter? fetchRecipes():null;
+      // console.log("counter",co)
       files.length=0;
   }
   
@@ -406,7 +416,6 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
             </>
           )}
         </Modal>
-
        <> {position === 'success' ?(<>
         {Object.keys(groupedRecipes).length === 0 ? (
           <Empty description="No recipes found" />
