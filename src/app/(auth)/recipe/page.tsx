@@ -366,7 +366,12 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            
+            <div className= "flex gap-2 md:absolute md:left-[70.5%] md:top-[10%] md:mb-4 lg:absolute lg:left-[76.5%] lg:top-[10.5%] xl:static xl:mb-0" >
+              <label style={{color: '#797FE7'}}>From: </label>
+            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setStartDate(e.target.value)} />
+            <label style={{color: '#797FE7'}}>To: </label>
+            <input style={{textAlign: 'center'}} type="date" onChange={(e) => setEndDate(e.target.value)} />
+            </div>
             <Button type="primary" onClick={handleExport} disabled={uploading} style={{ backgroundColor: '#797FE7', borderColor: '#797FE7' }}>
               {isExporting ? <Spin indicator={exportSpinner} /> : 'Export'}
             </Button>
