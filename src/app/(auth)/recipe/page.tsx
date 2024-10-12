@@ -281,17 +281,17 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 
 
 
-  const handleUpload = async (files: any) => {
+  const handleUpload = async (files: UploadFile[]) => {
     // console.log("handleFailedFiles",files.length)
-    const formData = new FormData();
+    // const formData = new FormData();
     console.log('files',files);
     // formData.append('files', files[0]);
     // console.log(formData)
-    for(let i=0;i<files.length;i++){
-      formData.append('files', files[i]);
-    }
+    // for(let i=0;i<files.length;i++){
+    //   formData.append('files', files[i]);
+    // }
     // formData.append('files', JSON.stringify(files));
-    console.log(formData)
+    // console.log(formData)
     // files.forEach(file => formData.append('files', file)) // Add files to formData
     setUploading(true);
   // console.log(formData)
@@ -299,7 +299,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
       setShowPageElements(false);
   
       // Step 1: Upload files
-      const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', formData, {
+      const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', files, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
