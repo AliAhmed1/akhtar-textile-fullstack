@@ -9,6 +9,7 @@ import TabPane from 'antd/es/tabs/TabPane';
 import { RcFile } from 'antd/es/upload';
 import { response } from 'express';
 import {formatDate} from '@/utils/formatDate'
+import { UploadFile, UploadProps } from 'antd/lib';
 const { Title, Text } = Typography;
 
 interface Recipe {
@@ -80,17 +81,16 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
       message.error('Failed to delete recipe');
     }
   };
-  const [files, setFiles] = useState<File[]>([]);
-  const handleFile = async (file: File) => {
-    let temp = await files
-    temp.push(file)
-    setFiles(temp)
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  // let abc = []
+  const handleFile: UploadProps['onChange'] = (info) => {
+    setFileList([...info.fileList]);
 
   }
 
-  useEffect(() => {
-    // console.log(files)
-  }, [files]);
+  // useEffect(() => {
+  //   // console.log(files)
+  // }, [files]);
 
   const handleExport = async () => {
     if (!startDate || !endDate) {
@@ -281,12 +281,20 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 
 
 
-  const handleUpload = async (files: File[]) => {
+  const handleUpload = async (files: any) => {
     // console.log("handleFailedFiles",files.length)
     const formData = new FormData();
-    files.forEach(file => formData.append('files', file)); // Add files to formData
+    console.log('files',files);
+    // formData.append('files', files[0]);
+    // console.log(formData)
+    for(let i=0;i<files.length;i++){
+      formData.append('files', files[i]);
+    }
+    // formData.append('files', JSON.stringify(files));
+    console.log(formData)
+    // files.forEach(file => formData.append('files', file)) // Add files to formData
     setUploading(true);
-  
+  // console.log(formData)
       // Hide page elements while uploading
       setShowPageElements(false);
   
@@ -307,7 +315,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 
       }
 
-      files.length=0;
+      setFileList([]);
   }
   
 
@@ -398,10 +406,10 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
             <center><Spin size="large" style={{ textAlign: 'center', padding: '2rem' }} /></center>
           ) : (
             <>
-            <Upload beforeUpload={(file) => handleFile(file)} accept=".xlsx, .xls" multiple>
+            <Upload  defaultFileList={fileList}  onChange={handleFile} accept=".xlsx, .xls" multiple>
               <Button icon={<UploadOutlined />}>Click to Upload</Button>
             </Upload>
-            <Button type="primary" className='mt-4' onClick={()=>{handleUpload(files)}} >Confirm</Button>
+            <Button type="primary" className='mt-4' onClick={()=>{handleUpload(fileList)}} >Confirm</Button>
             </>
           )}
         </Modal>
