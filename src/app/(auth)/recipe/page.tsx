@@ -40,6 +40,7 @@ const Recipes = () => {
   const [modalType, setModalType] = useState('success'); // 'success' or 'failed'
   const [showPageElements, setShowPageElements] = useState(true); // State to control visibility
 const [position, setPosition] = useState<'success'| 'failed'>('success');
+const [isLoading,setIsLoading]=useState<boolean>(false);
   // State for success and failure uploads
   // const [successUploads, setSuccessUploads] = useState<string[]>([]);
   
@@ -85,7 +86,6 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
   // let abc = []
   const handleFile: UploadProps['onChange'] = (info) => {
     setFileList([...info.fileList]);
-
   }
 
   // useEffect(() => {
@@ -261,7 +261,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
         }finally {
           // Show page elements after processing is done
           setShowPageElements(true);
-          setUploading(false);
+          
         }
 
   }
@@ -282,40 +282,36 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 
 
   const handleUpload = async (files: UploadFile[]) => {
-    console.log("handleFailedFiles",files[0].originFileObj)
-    const formData = new FormData();
-    // console.log('files',files);
-    // formData.append('files', files.map((file) => file.originFileObj));
-    // 
-    for(let i=0;i<files.length;i++){
-      formData.append('file', JSON.stringify(files[i].originFileObj));
-    }
-    console.log(formData)
-    // formData.append('files', JSON.stringify(files));
-    // console.log(formData)
-    // files.forEach(file => formData.append('files', file)) // Add files to formData
+    let counter = 0;
+    files.forEach(async file => {
+      if(file.originFileObj){
+        const formData = new FormData();
+      formData.append('files', file.originFileObj) // Add files to formData
     setUploading(true);
   // console.log(formData)
+  console.log("check")
       // Hide page elements while uploading
       setShowPageElements(false);
-  
       // Step 1: Upload files
       const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
+console.log(uploadResponse.data.recipes)  ;
+// formData.delete('files');
       let failedNames: string[] = [];
-// console.log('uploadResponse',uploadResponse)
       if(uploadResponse.data.failed_files.length > 0){
         failedNames.push(uploadResponse.data.failed_files)
         saveFailedUploads(failedNames[0])
 
       }
       if(uploadResponse.data.recipes){
-        const result = await saveBulkRecipes(uploadResponse.data.recipes)
+        await saveBulkRecipes(uploadResponse.data.recipes)
 
       }
-
+    }
+    console.log(counter++);
+  })
+  setUploading(false);
       setFileList([]);
   }
   
@@ -410,7 +406,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
             <Upload  defaultFileList={fileList}  onChange={handleFile} accept=".xlsx, .xls" multiple>
               <Button icon={<UploadOutlined />}>Click to Upload</Button>
             </Upload>
-            <Button type="primary" className='mt-4' onClick={()=>{handleUpload(fileList)}} >Confirm</Button>
+            <Button type="primary" className='mt-4' onClick={()=>{handleUpload(fileList)}} disabled={isLoading} >Confirm</Button>
             </>
           )}
         </Modal>
