@@ -296,7 +296,7 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
   setLoading(true);
       // Hide page elements while uploading
       setShowPageElements(false);
-
+console.log(formData);
       
       // Step 1: Upload files
       const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', formData, {
