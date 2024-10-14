@@ -10,6 +10,7 @@ import { RcFile } from 'antd/es/upload';
 import { response } from 'express';
 import {formatDate} from '@/utils/formatDate'
 import { UploadFile, UploadProps } from 'antd/lib';
+
 const { Title, Text } = Typography;
 
 interface Recipe {
@@ -43,7 +44,8 @@ const [position, setPosition] = useState<'success'| 'failed'>('success');
 const [isLoading,setIsLoading]=useState<boolean>(false);
   // State for success and failure uploads
   // const [successUploads, setSuccessUploads] = useState<string[]>([]);
-  
+  let [getRecipeCounter, setGetRecipeCounter] = useState<number>(0);
+  let [postRecipeCounter, setPostRecipeCounter] = useState<number>(0);
 // let [sucessful,setSuccessful]=useState<string[]>([]);
   // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -58,7 +60,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   
 
   const fetchRecipes = async () => {
-    setLoading(true);
+    !loading && setLoading(true)
     try {
       const response = await fetch('/api/getRecipe', { cache: 'no-store' });
       if (!response.ok) throw new Error('Network response was not ok');
@@ -68,6 +70,8 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
       setError('Failed to fetch recipes');
       console.error('Failed to fetch recipes:', error);
     } finally {
+      getRecipeCounter > 0 ? setGetRecipeCounter(0):null;
+      postRecipeCounter > 0 ? setPostRecipeCounter(0):null;
       setLoading(false);
     }
   };
@@ -87,6 +91,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   const handleFile: UploadProps['onChange'] = (info) => {
     setFileList([...info.fileList]);
   }
+
 
   // useEffect(() => {
   //   // console.log(files)
@@ -159,7 +164,8 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
       const data = response.data;
       // const result = await response.data;
       // data.files.map((file:any,index:number)=>{dataSource.title=file.title,dataSource.created_at=file.created_at})
-      // console.log(data)
+      // console.log(response.data)
+      // data.
       let dataSet:any[] = []
       data.files.forEach((file:any,index:number)=>{
         // console.log(file)
@@ -251,8 +257,9 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
           duplicates[0].length>0?duplicates[0].forEach((x) => {message.error(`${x} is duplicate`)  }):null
           successNames[0].length>0?successNames[0].forEach((x) => {message.success(`${x} is successfully uploaded`)}):null
           successNames = [];
+          
           setIsModalOpen(false);
-          fetchRecipes();
+          
 
         return reponse;
         } catch (error) {
@@ -282,38 +289,62 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
 
 
   const handleUpload = async (files: UploadFile[]) => {
-    let counter = 0;
-    files.forEach(async file => {
-      if(file.originFileObj){
-        const formData = new FormData();
-      formData.append('files', file.originFileObj) // Add files to formData
-    setUploading(true);
-  // console.log(formData)
-  console.log("check")
-      // Hide page elements while uploading
-      setShowPageElements(false);
-      // Step 1: Upload files
-      const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+    const BATCH_SIZE = 40;
+    let postRecipeCounter = 0;
+  
+    const failedNames: string[] = [];
+  
+    // Helper function to process a batch of files
+    const processBatch = async (batch: UploadFile[]) => {
+      const formData = new FormData();
+      
+      batch.forEach((file) => {
+        if (file.originFileObj) {
+          formData.append('files', file.originFileObj);
+        }
       });
-console.log(uploadResponse.data.recipes)  ;
-// formData.delete('files');
-      let failedNames: string[] = [];
-      if(uploadResponse.data.failed_files.length > 0){
-        failedNames.push(uploadResponse.data.failed_files)
-        saveFailedUploads(failedNames[0])
-
+  
+      setUploading(true);
+      setShowPageElements(false); // Hide elements while uploading
+  
+      try {
+        // Step 1: Upload files
+        const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+  
+        console.log("Upload Response", uploadResponse.data);
+  
+        // Handle failed files
+        if (uploadResponse.data.failed_files?.length > 0) {
+          failedNames.push(...uploadResponse.data.failed_files);
+          saveFailedUploads(failedNames); // Save failed uploads
+          
+        }
+  
+        // Handle successful recipes
+        if (uploadResponse.data.recipes) {
+          await saveBulkRecipes(uploadResponse.data.recipes);
+        }
+        postRecipeCounter++;
+      } catch (error) {
+        console.error("Error uploading batch:", error);
+      } finally {
+        setUploading(false);
+        setShowPageElements(true); // Show elements after uploading
       }
-      if(uploadResponse.data.recipes){
-        await saveBulkRecipes(uploadResponse.data.recipes)
-
-      }
+    };
+  
+    // Process files in batches of 40
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = files.slice(i, i + BATCH_SIZE); // Get a batch of 40 files
+      await processBatch(batch); // Wait for batch to process
+      console.log(`Processed batch: ${Math.ceil((i + 1) / BATCH_SIZE)}`);
     }
-    console.log(counter++);
-  })
-  setUploading(false);
-      setFileList([]);
-  }
+  fetchRecipes();
+    // After all batches are processed
+    setFileList([]);
+  };
   
 
   const showModal = () => setIsModalOpen(true);
@@ -403,14 +434,15 @@ console.log(uploadResponse.data.recipes)  ;
             <center><Spin size="large" style={{ textAlign: 'center', padding: '2rem' }} /></center>
           ) : (
             <>
+
             <Upload  defaultFileList={fileList}  onChange={handleFile} accept=".xlsx, .xls" multiple>
               <Button icon={<UploadOutlined />}>Click to Upload</Button>
             </Upload>
             <Button type="primary" className='mt-4' onClick={()=>{handleUpload(fileList)}} disabled={isLoading} >Confirm</Button>
+
             </>
           )}
         </Modal>
-
        <> {position === 'success' ?(<>
         {Object.keys(groupedRecipes).length === 0 ? (
           <Empty description="No recipes found" />

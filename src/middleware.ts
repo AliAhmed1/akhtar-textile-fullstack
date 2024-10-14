@@ -3,6 +3,8 @@ import { NextResponse, NextRequest } from 'next/server';
 // Simple in-memory cache
 const cache = new Map<string, { userId?: string; isUnauthorized?: boolean }>();
 export async function middleware(request: NextRequest) {
+  
+
   const token = request.cookies.get('token')?.value;
 
   // If no token is found, allow the request to proceed

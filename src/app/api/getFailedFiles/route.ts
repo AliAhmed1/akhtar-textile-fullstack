@@ -11,7 +11,7 @@ export async function GET() {
 const query = `SELECT title, created_at FROM history;`;
 const result = await client.query(query);
 // console.log(result);
-        return NextResponse.json({ files: result.rows , success: true, status: 200, headers: {
+        return NextResponse.json({ files: result?.rows?.reverse(), success: true, status: 200, headers: {
             'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', // Disable caching for this API route
           }});
     } catch (error) {
