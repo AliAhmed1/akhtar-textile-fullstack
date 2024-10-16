@@ -25,7 +25,10 @@ export async function POST(request: NextRequest) {
 
     // Find the user in the database
     const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
+    console.log(result)
+    console.log("Rows>>>>>>>",result.rows[0])
     const user = result.rows[0];
+    console.log(user)
 
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });

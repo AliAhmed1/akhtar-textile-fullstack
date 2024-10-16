@@ -95,8 +95,9 @@
 import { message } from 'antd';
 import { fail } from 'assert';
 import { ro } from 'date-fns/locale';
+import { result } from 'lodash';
 import { NextRequest, NextResponse } from 'next/server';
-import { Client } from 'pg';
+import { Client, types } from 'pg';
 
 // Initialize the PostgreSQL client
 
@@ -104,6 +105,8 @@ import { Client } from 'pg';
 
 // Handler for POST requests
 export async function POST(request: NextRequest) {
+  types.setTypeParser(20, val => Number(val)); // BIGINT
+types.setTypeParser(1700, val => Number(val)); // NUMERIC
 const client = new Client({
   connectionString: process.env.NEXT_PUBLIC_DATABASE_URL,
 });
@@ -129,12 +132,13 @@ const client = new Client({
     await client.query('BEGIN');
   
     for (let i = 0; i < recipes.length; i += BATCH_SIZE) {
+      let count = 0;
       const batch = recipes.slice(i, i + BATCH_SIZE);
   const successfulBatch: any[] = [];
   console.log("check",successfulBatch);
       const recipeValues: any[] = [];
       // Prepare values for recipe batch insert
-      console.log("check1",batch.length);
+      console.log("check1",batch);
        const recipeQueryPart =
       batch.map((recipe,index) => {
         recipeValues.push(
@@ -143,60 +147,52 @@ const client = new Client({
           recipe.finish,
           recipe.fabric,
           recipe.recipe_no,
-          recipe.Fno,
+          String(recipe.Fno),
           recipe.file_name
         );
         return  `($${index * 7 + 1}, $${index * 7 + 2}, $${index * 7 + 3}, $${index * 7 + 4}, $${index * 7 + 5}, $${index * 7 + 6}, $${index * 7 + 7})`;
       });
-      const recipeNos = batch.map(recipe => `'${recipe.recipe_no.replace(/'/g, "''")}'`).join(', ');
-
+      // const recipeNos = batch.map(recipe => `'${recipe.recipe_no.replace(/'/g, "''")}'`).join(', ');
+// console.log('recipeValues',recipeValues)
       // Construct the SQL query
       const recipeQuery = `
-        WITH inserted_recipes AS (
-          INSERT INTO recipes (Load_Size, Machine_Type, Finish, Fabric, Recipe, Fno, name)
-          VALUES ${recipeQueryPart.join(', ')}
-          ON CONFLICT (Recipe) DO NOTHING
-          RETURNING id, name, Recipe
-        )
-        SELECT 
-          COALESCE(inserted_recipes.id, recipes.id) AS id,  
-          COALESCE(inserted_recipes.name, recipes.name) AS name,  
-          recipes.Recipe AS recipe_no
-        FROM 
-          recipes
-        LEFT JOIN 
-          inserted_recipes ON recipes.Recipe = inserted_recipes.Recipe
-        WHERE 
-          recipes.Recipe IN (${recipeNos});  -- Properly formatted and quoted
+        INSERT INTO recipes (Load_Size, Machine_Type, Finish, Fabric, Recipe, Fno, name)
+        VALUES ${recipeQueryPart.join(', ')}
+        ON CONFLICT (Recipe) DO NOTHING
+        RETURNING id, name, Recipe;
       `;
       
       // Log the query for debugging (optional)
-      console.log('recipeQuery:', recipeQuery);
+      // console.log('recipeQuery:', recipeQuery);
   
       // Fill recipe values
       
       // console.log('check1',recipeValues);
   // console.log('check2');
-  const recipeIds:any = [];
+  const recipeIds:number[] = [];
       // Insert recipes and collect the IDs
       const recipeResult = await client.query(recipeQuery, recipeValues);
       console.log('check1',recipeResult.rows);
-    batch.forEach((recipe) => {
+      // const recipeIds = recipeResult.rows.map(row => Number(row.id)>0?Number(row.id):null);
+      console.log('recipe',recipeIds);
+    batch.forEach((recipe,index) => {
       // console.log(recipe);
       recipeResult.rows.forEach((row) => {
-        console.log('id',Number(row.id));
-        if ( Number(row.id) > 0) {
+  console.log(typeof(row.id));
+        // console.log('id',Number(row.id));
+        if ( row.recipe_no === recipe.recipe_no) {
           // console.log('check1',row.name);
+          // console.log(count++);
           successfulBatch.push(recipe);
           recipeIds.push(row.id);
           successful.push(row.name);
           
         } else {
-          duplicates.push(row.name);
+          duplicates.push(recipe.name);
         }
-      })
+      });
     })
-    console.log('check2',successfulBatch.length);
+    console.log('check2',recipeIds);
       //  = .map(row => row.id);
   // console.log('check3',recipeIds);
       // Prepare to insert steps for all recipes
@@ -204,65 +200,68 @@ const client = new Client({
       const stepExpression: any[] = [];
 
       // Fill step values
-let stepIndex = 0
+      let placeholderIndex = 1
 // let successCounter = 0;
 if (successfulBatch.length > 0) {
   
+  successfulBatch?.forEach((recipe, recipeIndex) => {
+    recipe.step.forEach((step: any ) => {
+      // Push step values into the array
+      stepValues.push(
+        String(step.step_no),            // Keep step_no as a string
+        step.action,                     // Action remains a string
+        String(step.minutes),            // Keep minutes as a string
+        step.litres,                     // Keep litres as is
+        step.rpm,                        // Keep rpm as is
+        step.temperature,                // Keep temperature as is
+        String(step.PH),                 // Keep PH as a string
+        String(step.LR),                 // Keep LR as a string
+        String(step.TDS),                // Keep TDS as a string
+        String(step.TSS),                // Keep TSS as a string
+        recipeIds[recipeIndex]          // Corresponding recipe ID
+      );
+  
+      // Create the expression with correct indexed placeholders
+      const rowPlaceholders = `($${placeholderIndex}, $${placeholderIndex + 1}, $${placeholderIndex + 2}, $${placeholderIndex + 3}, $${placeholderIndex + 4}, $${placeholderIndex + 5}, $${placeholderIndex + 6}, $${placeholderIndex + 7}, $${placeholderIndex + 8}, $${placeholderIndex + 9}, $${placeholderIndex + 10})`;
+    stepExpression.push(rowPlaceholders);
 
-      successfulBatch?.forEach((recipe, recipeIndex) => {
-        recipe.step.forEach((step: any) => {
-          // Push step values into the array
-          stepValues.push(
-            step.step_no,
-            step.action,
-            step.minutes,
-            step.litres,
-            step.rpm,
-            step.temperature,
-            step.PH,
-            step.LR,
-            step.TDS,
-            step.TSS,
-            recipeIds[recipeIndex] // Corresponding recipe ID
-          );
-      
-          // Push the expression with correct indexed placeholders
-          stepExpression.push(
-            `($${stepIndex * 10 + 1}, $${stepIndex * 10 + 2}, $${stepIndex * 10 + 3}, $${stepIndex * 10 + 4}, $${stepIndex * 10 + 5}, $${stepIndex * 10 + 6}, $${stepIndex * 10 + 7}, $${stepIndex * 10 + 8}, $${stepIndex * 10 + 9}, $${stepIndex * 10 + 10}, $${stepIndex * 10 + 11})`
-          );
-      
-          stepIndex++;
-       
+    // Increment the placeholder index by 10 for the next row
+    placeholderIndex += 11;
+    });
+  });
+  
+  // Construct the SQL query
+const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, centigrade, ph, lr, tds, tss, recipesid)
+                   VALUES ${stepExpression.join(', ')} RETURNING id, step_no, recipesid;`;
+  
+  // Log values before executing
+  // console.log(stepIndex)
+  console.log('Step Values:', stepValues.length);
+  console.log('Step Query:', stepExpression);
+  // stepValues.forEach((value, index) => {
+  //   console.log(`Value at index ${index+1}:`, value, `Type: ${typeof value}`);
+  // });
+  
 
-        // successCounter++;
-        });
-      });
-    
-       console.log(stepValues);
-      // console.log(stepQueryPart);
-      const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, RPM, centigrade, PH, LR, TDS, TSS, recipesid) 
-                         VALUES ${stepExpression.join(', ')} RETURNING id, step_no;`;
-// console.log(stepIndex);
-//   console.log(stepValues);
-//   console.log(stepExpression.length);
-  console.log('check4')
-      // Insert steps
-     const stepResult = await client.query(stepQuery, stepValues);
+    // Insert steps
+    const stepResult = await client.query(stepQuery, stepValues);
+    console.log('Inserted Step Result:', stepResult.rows);
+
 
     
   console.log('check4.5')
 
       // Collect all chemicals to insert concurrently
       const chemicalPromises = successfulBatch?.map((recipe, recipeIndex) => {
-        return insertChemicalsInBatch(recipe.step, stepResult, recipeIds[recipeIndex],client);
+        return insertChemicalsInBatch(recipe.step, stepResult, client, recipeIds[recipeIndex]);
       });
       
-  console.log('check5')
+  // console.log('check5')
       // Wait for all chemical insertions to complete
       await Promise.all(chemicalPromises);
     }
       // Track successful uploads
-      successful.push(successfulBatch?.map(recipe => recipe.name));
+      // successful.push(successfulBatch?.map(recipe => recipe.name));
     }
   
     // Commit transaction after all batches processed successfully
@@ -282,11 +281,12 @@ console.log(successful);
 
 }
   // Helper function to batch insert chemicals for steps
-  const insertChemicalsInBatch = async (steps: any[],stepResult: any, recipeId: number, client: any) => {
+  const insertChemicalsInBatch = async (steps: any[],stepResult: any, client: any, recipeId: any) => {
     const chemicalInsertData: any[] = [];
     const chemicalAssocInsertData: any[] = [];
   console.log('check5')
     steps.forEach((step) => {
+      console.log(step.chemicals)
       if (step.chemicals && step.chemicals.length > 0) {
         step.chemicals.forEach((chemical: any) => {
           // Prepare chemical for insert
@@ -297,17 +297,29 @@ console.log(successful);
   console.log('check5.5')
     // Insert chemicals if they exist
     if (chemicalInsertData.length > 0) {
-      const chemicalQuery = `INSERT INTO chemicals (name) 
-                             VALUES ${chemicalInsertData.map((_, index) => `($${index + 1})`).join(', ')} 
-                             ON CONFLICT (name) DO NOTHING RETURNING id , name;`;
+      const chemicalQuery = `WITH inserted AS (
+        INSERT INTO chemicals (name)
+        VALUES ${chemicalInsertData.map((_, index) => `($${index + 1})`).join(', ')}
+        ON CONFLICT (name) DO NOTHING
+        RETURNING id, name
+      )
+      SELECT 
+        COALESCE(inserted.id, existing.id) AS id,
+        COALESCE(inserted.name, existing.name) AS name
+      FROM (
+        SELECT id, name FROM chemicals WHERE name IN (${chemicalInsertData.map((_, index) => `($${index + 1})`).join(', ')})
+      ) AS existing
+      LEFT JOIN inserted ON existing.name = inserted.name;`;
       console.log('check6')
       const chemicalIdsResult = await client.query(chemicalQuery, chemicalInsertData);
-      
-      steps.forEach((step, index) => {
-        if(step.step_no === stepResult.rows[index].step_no) {
+      console.log('chemical result',chemicalIdsResult.rows)
+      console.log('steps',steps);
+      steps.forEach((step) => {
+        stepResult.rows.forEach((stepResult:any) =>{
+        if(step.step_no ===  Number(stepResult.step_no) && stepResult.recipesid === recipeId) {   /// work needs to be done not populating
           step.chemicals?.forEach((chemical: any, index: number) => {
             chemicalIdsResult.rows.forEach((chemicalResult:any, index:number) => {
-              console.log('check6.5',chemicalIdsResult.rows[index])
+              console.log('check6.5',chemicalIdsResult[index].name)
               if(chemical.recipe_name === chemicalResult.name) {
                 chemicalAssocInsertData.push([
                   stepResult.rows[index].id, // Use the recipe ID for association
@@ -320,17 +332,19 @@ console.log(successful);
             
           })
         }
-        
+      })
       })
 
-  // console.log('check7',chemicalIdsResult)
+  console.log('check7',chemicalAssocInsertData)
       // Prepare chemical association query
       if (chemicalAssocInsertData.length > 0) {
         const chemicalAssocQuery = `INSERT INTO chemical_association (stepid, chemicalid, percentage, dosage) 
                                      VALUES ${chemicalAssocInsertData.map((_, index) => `($${index * 4 + 1}, $${index * 4 + 2}, $${index * 4 + 3}, $${index * 4 + 4})`).join(', ')}`;
         
         await client.query(chemicalAssocQuery, chemicalAssocInsertData);
+        console.log('check8');
       }
+
     }
   };
 

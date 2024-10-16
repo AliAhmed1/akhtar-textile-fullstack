@@ -50,6 +50,7 @@ export async function middleware(request: NextRequest) {
 
   // If valid, extract the user ID from the response
   const userData = await apiResponse.json();
+  console.log("User Data>>>",userData)
 
   // Cache the user ID for future requests
   cache.set(token, { userId: userData.id });
