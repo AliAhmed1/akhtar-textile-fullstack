@@ -290,7 +290,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
 
 
 
-  const handleUpload = async (files: UploadFile[]) => {
+ const handleUpload = async (files: UploadFile[]) => {
     const BATCH_SIZE = 40;
     let postRecipeCounter = 0;
   
