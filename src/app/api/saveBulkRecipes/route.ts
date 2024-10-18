@@ -107,7 +107,7 @@ import { Client, types } from 'pg';
 export async function POST(request: NextRequest) {
 //   types.setTypeParser(20, val => Number(val)); // BIGINT
 // types.setTypeParser(1700, val => Number(val)); // NUMERIC
-
+// const {fil}
 const client = new Client({
   connectionString: process.env.NEXT_PUBLIC_DATABASE_URL,
 });
@@ -119,20 +119,21 @@ const client = new Client({
   try {
     client.connect();
     // Parse the JSON body
-    const fullData = await request.json();
-    
-    // Check if fullData is an array (multiple recipes) or a single object (one recipe)
-    const recipes = Array.isArray(fullData) ? fullData : [fullData];
-    
+    const {fileDataArray, BatchSize} = await request.json();
+    console.log('batchSize',BatchSize);
+    console.log('fileDataArray',fileDataArray);
+    // Check if fileDataArray is an array (multiple recipes) or a single object (one recipe)
+    const recipes = Array.isArray(fileDataArray) ? fileDataArray : [fileDataArray];
+    console.log('recipes',recipes.length);
     // Split recipes into batches for processing
-    const BATCH_SIZE = 40;
+    // const BATCH_SIZE = 40;
   
     // Start transaction for all uploads
     await client.query('BEGIN');
   
-    for (let i = 0; i < recipes.length; i += BATCH_SIZE) {
+    for (let i = 0; i < recipes.length; i += BatchSize) {
       let count = 0;
-      const batch = recipes.slice(i, i + BATCH_SIZE);
+      const batch = recipes.slice(i, i + BatchSize);
   const successfulBatch: any[] = [];
   // console.log("check",successfulBatch);
       const recipeValues: any[] = [];
@@ -238,20 +239,32 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
 
     
   console.log('check4.5')
-console.log(stepResult.rows.filter((step) => step.recipesid === null));
+// console.log(stepResult.rows.filter((step) => step.recipesid === null));
       // Collect all chemicals to insert concurrently
       const chemicalPromises = successfulBatch?.map((recipe, recipeIndex) => {
         // console.log(step.recipesid)
         const recipesSteps = stepResult.rows.filter((step) => BigInt(step.recipesid) === recipeIds[recipeIndex]);
-        // console.log(recipesSteps);
-        return insertChemicalsInBatch(recipe.step, recipesSteps, client, recipeIds[recipeIndex]);
+        console.log('filename',recipe.file_name);
+        return insertChemicalsInBatch(recipe.step, recipesSteps, client, recipe);
       });
       
       // Wait for all chemical insertions to complete
       await Promise.all(chemicalPromises);
     }
+    // suc
+    batch.forEach((recipe) => {
+      successful?.forEach((successfulFile) => {
+        if(recipe.file_name !== successfulFile){
+
+          return duplicates.push(recipe.file_name)
+
+        }
+      })
+      successful.length === 0?duplicates.push(recipe.file_name):null;
+    });
     }
-  
+    console.log(duplicates.length);
+    console.log('success',successful);
     // Commit transaction after all batches processed successfully
     await client.query('COMMIT');
   
@@ -269,7 +282,7 @@ console.log(stepResult.rows.filter((step) => step.recipesid === null));
 
 }
   // Helper function to batch insert chemicals for steps
-  const insertChemicalsInBatch = async (steps: any[],stepResult: any, client: any, recipeId: BigInt) => {
+  const insertChemicalsInBatch = async (steps: any[],stepResult: any, client: any, recipe:any) => {
     const chemicalInsertData: any[] = [];
     const chemicalAssocInsertData: any[] = [];
     const placeholders:any[] = [];
@@ -327,7 +340,7 @@ console.log(stepResult.rows.filter((step) => step.recipesid === null));
               // console.log('check6.5',chemicalResult.name)
               // console.log('check6.6',chemical.recipe_name)
               if(chemical.recipe_name === chemicalResult.name) {
-                // console.log(stepResult.id)
+                console.log(chemical.dosage === "None"?chemical.dosage:null)
                 chemicalAssocInsertData.push(
                   BigInt(stepResult.id), // Use the recipe ID for association
                   BigInt(chemicalResult.id), // Assuming name is the chemical ID, else map properly
@@ -348,7 +361,8 @@ console.log(stepResult.rows.filter((step) => step.recipesid === null));
 
       
 
-  console.log('check7',chemicalAssocInsertData)
+  console.log('check7',chemicalAssocInsertData);
+  console.log('filename', recipe.file_name);
       // Prepare chemical association query
       if (chemicalAssocInsertData.length > 0) {
         const chemicalAssocQuery = `INSERT INTO chemical_association (stepid, chemicalid, percentage, dosage) 

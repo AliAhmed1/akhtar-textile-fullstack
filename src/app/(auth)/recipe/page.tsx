@@ -90,6 +90,8 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   // let abc = []
   const handleFile: UploadProps['onChange'] = (info) => {
     setFileList([...info.fileList]);
+    console.log(info.file.status);
+    info.file.status === 'done'&& setIsLoading(false)
   }
 
 
@@ -236,7 +238,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   //     setUploading(false);
   //   }
 
-  let saveBulkRecipes = async (fileDataArray:any) => {
+  let saveBulkRecipes = async (fileDataArray:any, BatchSize:number) => {
 
     
       let successNames: string[][] = [];
@@ -247,7 +249,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
         try {
 
          
-          const reponse = await axios.post('/api/saveBulkRecipes/', fileDataArray, {
+          const reponse = await axios.post('/api/saveBulkRecipes/', {fileDataArray,BatchSize},  {
             headers: { 'Content-Type': 'application/json' },
           });
           // console.log(reponse)
@@ -324,7 +326,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   
         // Handle successful recipes
         if (uploadResponse.data.recipes) {
-          await saveBulkRecipes(uploadResponse.data.recipes);
+          await saveBulkRecipes(uploadResponse.data.recipes,BATCH_SIZE);
         }
         postRecipeCounter++;
       } catch (error) {
@@ -430,19 +432,16 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
           </div>
         </div>
         <Modal title="Upload File" visible={isModalOpen} onCancel={handleCancel} footer={null}>
-          {uploading ? (
-            <center><Spin size="large" style={{ textAlign: 'center', padding: '2rem' }} /></center>
-          ) : (
+         
             <>
 
-            <Upload  defaultFileList={fileList}  onChange={handleFile} accept=".xlsx, .xls" multiple>
-              <Button icon={<UploadOutlined />}>Click to Upload</Button>
+            <Upload  defaultFileList={fileList}  onChange={handleFile} accept=".xlsx, .xls"  multiple>
+              <Button icon={<UploadOutlined />} onClick={()=> setIsLoading(true)}>Click to Upload</Button>
             </Upload>
             <Button type="primary" className='mt-4' onClick={()=>{handleUpload(fileList)}} disabled={isLoading} >Confirm</Button>
 
             </>
-          )}
-        </Modal>
+         </Modal>
        <> {position === 'success' ?(<>
         {Object.keys(groupedRecipes).length === 0 ? (
           <Empty description="No recipes found" />
