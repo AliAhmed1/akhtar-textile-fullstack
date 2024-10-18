@@ -275,6 +275,7 @@ export async function GET(request:any) {
       { header: 'Dosage', key: 'dosage' },
       { header: 'Centigrade', key: 'centigrade' },
       { header: 'PH', key: 'ph' },
+      { header: 'LR', key: 'lr' },
       { header: 'TDS', key: 'tds' },
       { header: 'TSS', key: 'tss' },
       { header: 'Pieces', key: 'pieces' },
@@ -311,11 +312,11 @@ export async function GET(request:any) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '7030a0' } };
       } else if (colNumber <= 13) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'ffff00' } };
-      } else if (colNumber <= 20) {
+      } else if (colNumber <= 21) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'e26b0a' } };
-      } else if (colNumber <= 24){
+      } else if (colNumber <= 25){
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '7030a0' } };
-      } else if (colNumber <= 27) {
+      } else if (colNumber <= 28) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4f81bd' } };
       } else {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '00b050' } };
@@ -357,6 +358,7 @@ export async function GET(request:any) {
               rpm: step.rpm,
               centigrade: step.centigrade,
               ph: step.ph,
+              lr: step.lr,
               tds: step.tds,
               tss: step.tss,
               minutes: step.minutes,
@@ -389,6 +391,7 @@ export async function GET(request:any) {
               rpm: step.rpm,
               centigrade: step.centigrade,
               ph: step.ph,
+              lr: step.lr,
               tds: step.tds,
               tss: step.tss,
               minutes: step.minutes,
@@ -408,7 +411,7 @@ export async function GET(request:any) {
           cell.border = { bottom: { style: 'thick', color: { argb: '000000' } } }; 
         }
 
-        const sectionEndColumns = [6, 13, 20, 24,27]; 
+        const sectionEndColumns = [6, 13, 21, 25,28]; 
 
         sectionEndColumns.forEach(colNum => {
           for (let rowNum = firstStepRow; rowNum <= lastRow.number; rowNum++) {

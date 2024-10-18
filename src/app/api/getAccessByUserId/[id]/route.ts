@@ -9,11 +9,9 @@ const pool = new Pool({
 // Define the handler for the API route
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const client = await pool.connect();
-  const userId = params.id;
-
   try {
     const query = 'SELECT accesslevels FROM access_levels WHERE usersid = $1';
-    const result = await client.query(query, [userId]);
+    const result = await client.query(query, [params.id]);
     console.log(result.rows);    
     if (result.rows.length === 0) {
       return NextResponse.json({ message: 'UserId not found' }, { status: 404 });
