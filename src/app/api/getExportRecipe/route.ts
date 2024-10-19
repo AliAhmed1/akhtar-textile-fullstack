@@ -34,8 +34,7 @@ export async function GET(request:any) {
     chemicalsResult = await client.query('SELECT * FROM chemicals');
     chemicalsAssocResult= await client.query('SELECT * FROM chemical_association');
 client.release()
-    return NextResponse.json({success: true, message: {stepsResult,chemicalsResult,chemicalsAssocResult,recipesResult}},{status: 200});
-    
+    return NextResponse.json({success: true, files: {stepsResult,chemicalsResult,chemicalsAssocResult,recipesResult},status: 200}, {headers: {'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate'}});
     } catch (error) {
         console.error('Failed to export recipes:', error);
         return new NextResponse('Error exporting recipes', { status: 500 });

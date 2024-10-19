@@ -115,7 +115,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
         params: { start_date: startDate, end_date: endDate },
         responseType: 'json',
       });
-      const data = responseResult.data.message;
+      const data = responseResult.data.files;
       console.log(data);
       const response = await axios.post('/api/exportRecipes', {data},
         {headers:{'Content-Type': 'application/json'},
