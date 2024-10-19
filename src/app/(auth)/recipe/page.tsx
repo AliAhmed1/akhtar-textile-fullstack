@@ -10,6 +10,7 @@ import { RcFile } from 'antd/es/upload';
 import { response } from 'express';
 import {formatDate} from '@/utils/formatDate'
 import { UploadFile, UploadProps } from 'antd/lib';
+import { headers } from 'next/headers';
 
 const { Title, Text } = Typography;
 
@@ -110,11 +111,16 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
     setIsExporting(true);
 
     try {
-      const response = await axios.get('/api/exportRecipes', {
+      const responseResult = await axios.get('/api/getExportRecipe', {
         params: { start_date: startDate, end_date: endDate },
+        responseType: 'json',
+      });
+      const data = responseResult.data.message;
+      console.log(data);
+      const response = await axios.post('/api/exportRecipes', {data},
+        {headers:{'Content-Type': 'application/json'},
         responseType: 'blob',
       });
-
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -432,14 +438,12 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
           </div>
         </div>
         <Modal title="Upload File" visible={isModalOpen} onCancel={handleCancel} footer={null}>
-         
             <>
-
+            <Button type="primary" className='mr-3' onClick={()=>{handleUpload(fileList)}} disabled={isLoading} >Confirm</Button>
             <Upload  defaultFileList={fileList}  onChange={handleFile} accept=".xlsx, .xls"  multiple>
               <Button icon={<UploadOutlined />} onClick={()=> setIsLoading(true)}>Click to Upload</Button>
             </Upload>
-            <Button type="primary" className='mt-4' onClick={()=>{handleUpload(fileList)}} disabled={isLoading} >Confirm</Button>
-
+            
             </>
          </Modal>
        <> {position === 'success' ?(<>
