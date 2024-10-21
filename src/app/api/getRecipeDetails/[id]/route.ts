@@ -3,18 +3,18 @@ import { Pool } from 'pg';
 
 const pool = new Pool({ connectionString: process.env.NEXT_PUBLIC_DATABASE_URL });
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: { id: BigInt } }) {
   console.log('Received request for ID:', params.id);
 
   const { id } = params;
 
   try {
-    const numericId = parseInt(id, 10);
+    const numericId = id;
     console.log('Parsed ID:', numericId);
 
-    if (isNaN(numericId)) {
-      return NextResponse.json({ message: 'Invalid ID format' }, { status: 400 });
-    }
+    // if (isNaN(numericId)) {
+    //   return NextResponse.json({ message: 'Invalid ID format' }, { status: 400 });
+    // }
 
     const client = await pool.connect();
 
@@ -26,20 +26,20 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       `,
       [id]
     );
-
+// console.log('recipeResult',recipeResult.rows);
     // Fetch steps for the recipe
     const stepsResult = await client.query(
-      'SELECT * FROM steps WHERE recipesid = $1',[recipeResult.rows[0].recipe_id]
+      'SELECT id::text, created_at, action, liters, rpm, centigrade, ph, lr, tds, tss, recipesid, step_no, minutes, step_id FROM steps WHERE recipesid = $1',[BigInt(recipeResult.rows[0].recipe_id)]
     );
-
+// console.log('stepsResult',stepsResult.rows);
     // Fetch chemical associations and chemicals
     const chemicalsResult = await client.query(`
       SELECT ca.dosage, ca.percentage, c.id AS chemical_id, c.name AS chemical_name, s.id AS step_id
       FROM chemicals c
-      JOIN chemical_association ca ON c.id = CAST(ca.chemicalid AS INT)
-      JOIN steps s ON ca.stepid = s.id::VARCHAR(255)
+      JOIN chemical_association ca ON c.id = ca.chemicalid
+      JOIN steps s ON ca.stepid = s.id
       WHERE s.recipesid = $1
-    `, [recipeResult.rows[0].recipe_id]);
+    `, [BigInt(recipeResult.rows[0].recipe_id)]);
 
     // console.log('Chemicals Result:', chemicalsResult.rows);
 
@@ -55,7 +55,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         ...recipe,
         steps: steps.map(step => ({
           ...step,
-          chemicals: chemicals.filter(chemical => chemical.step_id === step.id)
+          chemicals: chemicals.filter(chemical => BigInt(chemical.step_id) === BigInt(step.id))
         }))
       };
 
