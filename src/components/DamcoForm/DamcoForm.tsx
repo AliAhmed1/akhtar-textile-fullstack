@@ -44,7 +44,7 @@ const onChange: DatePickerProps['onChange'] = (date, dateString) => {
 
   const columns: ColumnsType<TableData> = [
   {
-    title: capitalizeTitle('SNo'),
+    title: capitalizeTitle('ID'),
     dataIndex: 'sno',
     key: 'sno',
   },
