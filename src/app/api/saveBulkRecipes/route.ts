@@ -252,15 +252,22 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
       await Promise.all(chemicalPromises);
     }
     // suc
-    batch.forEach((recipe) => {
-      successful?.forEach((successfulFile) => {
-        if(recipe.file_name !== successfulFile){
+    const seenFiles: Set<string> = new Set();
 
-          return duplicates.push(recipe.file_name)
-
+    batch.forEach((recipe: { file_name: string }) => {
+      if (successful.length === 0) {
+        if (!seenFiles.has(recipe.file_name)) {
+          duplicates.push(recipe.file_name);
+          seenFiles.add(recipe.file_name);
         }
-      })
-      successful.length === 0?duplicates.push(recipe.file_name):null;
+      } else {
+        const isDuplicate = successful.every((successfulFile: string) => recipe.file_name !== successfulFile);
+        
+        if (isDuplicate && !seenFiles.has(recipe.file_name)) {
+          duplicates.push(recipe.file_name);
+          seenFiles.add(recipe.file_name);
+        }
+      }
     });
     }
     console.log(duplicates.length);
