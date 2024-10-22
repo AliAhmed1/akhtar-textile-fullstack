@@ -54,7 +54,7 @@ export async function GET() {
     `;
     const result = await client.query(query);
 
-    return NextResponse.json({ chemicals: result.rows }, {
+    return NextResponse.json({ chemicals: result.rows.reverse() }, {
       status: 200,
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', // Disable caching for this API route
