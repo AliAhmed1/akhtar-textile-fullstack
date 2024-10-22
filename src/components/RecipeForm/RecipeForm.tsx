@@ -453,18 +453,55 @@ const RecipeForm: React.FC = () => {
             fno: data.fno,
           });
 
-          const recipesDataForTable = data.steps.map((step: any, index: number) => ({
-            key: index,
-            step: step.step_no,
-            action: step.action,
-            minutes: step.minutes,
-            centigrade: step.centigrade,
-            liters: step.liters,
-            rpm: step.rpm,
-            chemicalName: step.chemicals.map((chemical: any) => chemical.chemical_name),
-            percentage: step.chemicals.map((chemical: any) => chemical.percentage),
-            dosage: step.chemicals.map((chemical: any) => chemical.dosage),
-          }));
+          // const recipesDataForTable = data.steps.map((step: any, index: number) => ({
+          //   key: index,
+          //   step: step.step_no,
+          //   action: step.action,
+          //   minutes: step.minutes,
+          //   centigrade: step.centigrade,
+          //   liters: step.liters,
+          //   rpm: step.rpm,
+          //   chemicalName: step.chemicals.map((chemical: any) => chemical.chemical_name),
+          //   percentage: step.chemicals.map((chemical: any) => chemical.percentage),
+          //   dosage: step.chemicals.map((chemical: any) => chemical.dosage),
+          // }));
+          const recipesDataForTable = () => {
+            let tableData: any[] = [];
+            data.steps.forEach((step:any,index:number)=>{
+              console.log(step);
+              const baseData = {
+                key: index,
+                step: step.step_no,
+                action: step.action,
+                minutes: step.minutes,
+                liters: step.litres,
+                rpm: step.rpm,
+                centigrade: step.centigrade,
+            };
+              if(step.chemicals.length > 0) {
+                step.chemicals.forEach((chemical:any) => {
+                  tableData.push({
+                    ...baseData,
+                    chemicalName:chemical.chemical_name,
+                  percentage: chemical.percentage,
+                  dosage: chemical.dosage,
+                  });
+                })
+              } else {
+                 tableData.push({
+                  ...baseData,
+                  chemicalName:step.chemical,
+                  percentage: step.chemical,
+                  dosage: step.chemical,
+                 });
+                }
+                
+              })
+            return tableData;
+    
+          }
+          console.log(tableData);
+          
           setTableData(recipesDataForTable);
         } else {
           setError(data.message || "Error fetching recipe");

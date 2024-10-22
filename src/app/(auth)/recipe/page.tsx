@@ -10,6 +10,7 @@ import { RcFile } from 'antd/es/upload';
 import { response } from 'express';
 import {formatDate} from '@/utils/formatDate'
 import { UploadFile, UploadProps } from 'antd/lib';
+import { headers } from 'next/headers';
 
 const { Title, Text } = Typography;
 
@@ -110,11 +111,16 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
     setIsExporting(true);
 
     try {
-      const response = await axios.get('/api/exportRecipes', {
+      const responseResult = await axios.get('/api/getExportRecipe', {
         params: { start_date: startDate, end_date: endDate },
+        responseType: 'json',
+      });
+      const data = responseResult.data.files;
+      console.log(data);
+      const response = await axios.post('/api/exportRecipes', {data},
+        {headers:{'Content-Type': 'application/json'},
         responseType: 'blob',
       });
-
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -158,7 +164,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
 
   // const dataA = []
 
-  
+
   const handleFailedFiles = async () => {
 
     try{
@@ -238,14 +244,11 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   //     setUploading(false);
   //   }
 
-  let saveBulkRecipes = async (fileDataArray:any, BatchSize:number) => {
+  let saveBulkRecipes = async (fileDataArray:any, BatchSize:number, successNames:string[][], duplicates:string[][]) => {
 
     
-      let successNames: string[][] = [];
-      let duplicates: string[][] = [];
-      // Step 2: Batch save recipes
-      const batchSize = 50; // Set batch size to 50 for optimal performance
- 
+      
+      // Step 2: Batch save recipes 
         try {
 
          
@@ -253,16 +256,11 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
             headers: { 'Content-Type': 'application/json' },
           });
           // console.log(reponse)
-          // Collect successful file names for this batch
-          duplicates.push(reponse.data.message.duplicates)
-          successNames.push(reponse.data.message.successful)
-          duplicates[0].length>0?duplicates[0].forEach((x) => {message.error(`${x} is duplicate`)  }):null
-          successNames[0].length>0?successNames[0].forEach((x) => {message.success(`${x} is successfully uploaded`)}):null
-          successNames = [];
-          
           setIsModalOpen(false);
+          // Collect successful file names for this batch
+          reponse.data.message.duplicates?reponse.data.message.duplicates.forEach((duplicate:any) => duplicates.push(duplicate)):null;
+          reponse.data.message.successful?reponse.data.message.successful.forEach((success:any) => successNames.push(success)):null;
           
-
         return reponse;
         } catch (error) {
           console.error('Error uploading or saving files:', error);
@@ -290,8 +288,10 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
 
 
 
-  const handleUpload = async (files: UploadFile[]) => {
-    const BATCH_SIZE = 40;
+ const handleUpload = async (files: UploadFile[]) => {
+  let successNames: string[][] = [];
+  let duplicates: string[][] = [];
+    const BATCH_SIZE = 35;
     let postRecipeCounter = 0;
   
     const failedNames: string[] = [];
@@ -326,7 +326,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   
         // Handle successful recipes
         if (uploadResponse.data.recipes) {
-          await saveBulkRecipes(uploadResponse.data.recipes,BATCH_SIZE);
+          await saveBulkRecipes(uploadResponse.data.recipes,BATCH_SIZE,successNames,duplicates);
         }
         postRecipeCounter++;
       } catch (error) {
@@ -343,6 +343,12 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
       await processBatch(batch); // Wait for batch to process
       console.log(`Processed batch: ${Math.ceil((i + 1) / BATCH_SIZE)}`);
     }
+    console.log(duplicates);
+          duplicates.length>0?message.error(`${duplicates.length} files are duplicate`):null
+          successNames.length>0?message.success(`${successNames.length} files are successfully uploaded`):null
+          // successNames = [];
+          // duplicates = [];  
+          // console.log(duplicates);
   fetchRecipes();
     // After all batches are processed
     setFileList([]);
@@ -432,14 +438,12 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
           </div>
         </div>
         <Modal title="Upload File" visible={isModalOpen} onCancel={handleCancel} footer={null}>
-         
             <>
-
+            <Button type="primary" className='mr-3' onClick={()=>{handleUpload(fileList)}} disabled={isLoading} >Confirm</Button>
             <Upload  defaultFileList={fileList}  onChange={handleFile} accept=".xlsx, .xls"  multiple>
               <Button icon={<UploadOutlined />} onClick={()=> setIsLoading(true)}>Click to Upload</Button>
             </Upload>
-            <Button type="primary" className='mt-4' onClick={()=>{handleUpload(fileList)}} disabled={isLoading} >Confirm</Button>
-
+            
             </>
          </Modal>
        <> {position === 'success' ?(<>
