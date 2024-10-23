@@ -13,11 +13,16 @@ const config: Config = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      spacing: {
+        '112': '28rem',
+        '116': '29rem', // Adding custom spacing for 28rem
+      },
     },
     screens: {
-      'xl': '1640px',
-      'lg': '1560px',
-      'md': '1024px',
+      'xl': '1920px',
+      'lg': '1600px',
+      'md': '1280px',
+      // 'sm': '900px',
 
     }
   },
