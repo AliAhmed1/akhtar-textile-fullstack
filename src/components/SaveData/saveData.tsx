@@ -11,29 +11,30 @@ interface SaveDataProps {
 
 const SaveData: React.FC<SaveDataProps> = ({ form, tableData, recipe1 }) => {
   const saveRecipe = async () => {
-
+    console.log('check');
     try {
-
+      console.log('Recipe');
       const values = form.getFieldsValue();
+      console.log(values);
+      console.log(tableData);
+      const stepsObj = [];
       const recipeData = {
+        id: recipe1.id,
         fileName: recipe1.file_name,
-        steps: tableData.map((step) => {
-          const chemicals = step.chemicalName.map((name: string, index: number) => ({
-            recipe_name: name,
-            percentage: step.percentage[index],
-            dosage: step.dosage[index],
-          }));
+        steps: tableData.map((step, index) => {
+          if(step.step === tableData[index+1].step){
 
-          return {
-            step_no: step.step,
+            stepsObj.push({
+              step_no: step.step,
             action: step.action,
             minutes: step.minutes,
             litres: step.liters,
             rpm: step.rpm,
-            chemicals: chemicals,
-            temperature: step.centigrade,
-          };
-        }),
+            // chemicals: chemicals,
+            temperature: step.centigrade
+            });
+          }
+        })
       };
 
       console.log('Recipe Data to be sent:', recipeData);

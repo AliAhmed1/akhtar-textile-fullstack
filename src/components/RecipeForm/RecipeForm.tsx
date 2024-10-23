@@ -336,26 +336,31 @@ const RecipeForm: React.FC = () => {
       title: "Step",
       dataIndex: "step",
       key: "step",
+      render: (text) => <InputNumber min={0} max={100} defaultValue={text} style={{ width: "70%" }} />,
     },
     {
       title: "Action",
       dataIndex: "action",
       key: "action",
+      render: (text) => <Input defaultValue={text}  />,
     },
     {
       title: "Minutes",
       dataIndex: "minutes",
       key: "minutes",
+      render: (text) => <InputNumber min={0} max={100} defaultValue={text} style={{ width: "70%" }} />,
     },
     {
       title: "Liters",
       dataIndex: "liters",
       key: "liters",
+      render: (text) => <InputNumber min={0} max={100} defaultValue={text} style={{ width: "85%" }} />,
     },
     {
       title: "RPM",
       dataIndex: "rpm",
       key: "rpm",
+      render: (text) => <InputNumber min={0} max={100} defaultValue={text} style={{ width: "65%" }} />,
     },
     {
       title: "Chemical Name",
@@ -388,7 +393,7 @@ const RecipeForm: React.FC = () => {
       title: "Centigrade",
       dataIndex: "centigrade",
       key: "centigrade",
-      render: (text) => <InputNumber min={0} defaultValue={text} style={{ width: 60 }} />,
+      render: (text) => <InputNumber min={0} defaultValue={text} style={{ width: 50 }} />,
     },
   ];
 
@@ -440,11 +445,12 @@ const RecipeForm: React.FC = () => {
       try {
         const response = await fetch(`/api/getRecipeDetails/${id}`);
         const data = await response.json();
-
+        console.log('data',data);
         if (response.ok) {
           setRecipe1(data);
 
           form.setFieldsValue({
+            id: data.recipe_id,
             loadSize: data.load_size,
             machineType: data.machine_type,
             finish: data.finish,
@@ -468,16 +474,18 @@ const RecipeForm: React.FC = () => {
           const recipesDataForTable = () => {
             let tableData: any[] = [];
             data.steps.forEach((step:any,index:number)=>{
-              console.log(step);
+              // console.log('step',step);
               const baseData = {
                 key: index,
                 step: step.step_no,
                 action: step.action,
                 minutes: step.minutes,
-                liters: step.litres,
+                liters: step.liters,
                 rpm: step.rpm,
                 centigrade: step.centigrade,
+                stepId: step.id,
             };
+
               if(step.chemicals.length > 0) {
                 step.chemicals.forEach((chemical:any) => {
                   tableData.push({
@@ -485,8 +493,9 @@ const RecipeForm: React.FC = () => {
                     chemicalName:chemical.chemical_name,
                   percentage: chemical.percentage,
                   dosage: chemical.dosage,
+                  chemicalId: chemical.chemical_id,
                   });
-                })
+                });
               } else {
                  tableData.push({
                   ...baseData,
@@ -497,10 +506,11 @@ const RecipeForm: React.FC = () => {
                 }
                 
               })
+              // console.log('tableData',tableData);
             return tableData;
     
           }
-          console.log(tableData);
+         
           
           setTableData(recipesDataForTable);
         } else {
@@ -544,6 +554,9 @@ const RecipeForm: React.FC = () => {
       <br />
       <div style={{ padding: "20px", backgroundColor: "white", borderRadius: "15px", margin: "auto" }}>
         <Form form={form} layout="vertical">
+        <Form.Item name="id" hidden>
+    <Input />
+  </Form.Item>
           <Row gutter={16}>
             <Col xs={24} md={12}>
               <Form.Item label="Load Size" name="loadSize">
@@ -599,7 +612,7 @@ const RecipeForm: React.FC = () => {
             </Button>
           </Col>
         </Row>
-        <Table ref={tableRef} columns={columns} dataSource={tableData} pagination={false} />
+        <Table ref={tableRef} columns={columns} dataSource={tableData} pagination={false} style={{overflowX: 'auto'}}/>
       </div>
 
       <Modal title="Upload Excel" open={isModalOpen} onCancel={handleCancel} footer={null}>
