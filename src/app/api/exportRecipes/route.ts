@@ -212,47 +212,23 @@
 
 export const dynamic = 'force-dynamic';
 
-import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { NextRequest, NextResponse } from 'next/server';
 import ExcelJS from 'exceljs';
 
-const pool = new Pool({
-  connectionString: process.env.NEXT_PUBLIC_DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
 
 
-export async function GET(request:any) {
+export async function POST(request:NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const startDate = searchParams.get('start_date');
-    const endDate = searchParams.get('end_date');
-    // console.log(startDate)
-    // console.log(endDate)
-    const client = await pool.connect();
-
-    if (!startDate || !endDate) {
-      return new NextResponse('Start date and end date are required', { status: 400 });
-    }    
-    const recipesResult = await client.query(
-      `SELECT * FROM recipes 
-       WHERE created_at >= $1 AND created_at < $2`, 
-       [startDate, new Date(new Date(endDate).setHours(23, 59, 59)).toISOString()]
-    );
-    
-    const stepsResult = await client.query('SELECT * FROM steps');
-    const chemicalsResult = await client.query('SELECT * FROM chemicals');
-    const chemicalsAssocResult = await client.query('SELECT * FROM chemical_association');
-    
-    client.release();
-
+    const {data} = await request.json();
+    console.log(data.recipesResult);
+    const { recipesResult, stepsResult, chemicalsResult, chemicalsAssocResult } = data;
+    // console.log('recipes',recipesResult,'steps',stepsResult,'chemicals',chemicalsResult,'chemicalsAssociation',chemicalsAssocResult);
+    // console.log(request.json());
     const recipes = recipesResult.rows;
     const steps = stepsResult.rows;
     const chemicals = chemicalsResult.rows;
     const chemicalsAssociation = chemicalsAssocResult.rows;
-
+// console.log(recipes);
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Recipes');
 
@@ -275,6 +251,7 @@ export async function GET(request:any) {
       { header: 'Dosage', key: 'dosage' },
       { header: 'Centigrade', key: 'centigrade' },
       { header: 'PH', key: 'ph' },
+      { header: 'LR', key: 'lr' },
       { header: 'TDS', key: 'tds' },
       { header: 'TSS', key: 'tss' },
       { header: 'Pieces', key: 'pieces' },
@@ -311,11 +288,11 @@ export async function GET(request:any) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '7030a0' } };
       } else if (colNumber <= 13) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'ffff00' } };
-      } else if (colNumber <= 20) {
+      } else if (colNumber <= 21) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'e26b0a' } };
-      } else if (colNumber <= 24){
+      } else if (colNumber <= 25){
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '7030a0' } };
-      } else if (colNumber <= 27) {
+      } else if (colNumber <= 28) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4f81bd' } };
       } else {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '00b050' } };
@@ -324,23 +301,22 @@ export async function GET(request:any) {
 
     const rowSet = new Set();
     // const darkbg = 'd7d7d7', lightbg = 'ffffff';
-    recipes.forEach((recipe, recipeIndex) => {
-      // console.log(recipeIndex);
-      const recipeSteps = steps.filter(step => step.recipesid === recipe.id);
+    recipes.forEach((recipe:any, recipeIndex:any) => {
+      const recipeSteps = steps.filter((step:any) => step.recipesid === recipe.id);
       let firstStepRow = worksheet.lastRow ? worksheet.lastRow.number + 1 : 1;
       let rowObject = {}
-      recipeSteps.forEach((step, stepIndex) => {
+      recipeSteps.forEach((step:any, stepIndex:any) => {
         const stepChemicals = chemicalsAssociation
-          .filter(assoc => assoc.stepid === step.id)
-          .map(assoc => {
-            const chemical = chemicals.find(c => c.id === assoc.chemicalid);
+          .filter((assoc:any) => assoc.stepid === step.id)
+          .map((assoc:any) => {
+            const chemical = chemicals.find((c:any) => c.id === assoc.chemicalid);
             return {
               chemical_name: chemical ? chemical.name : 'Unknown',
               dosage_percent: assoc.percentage !== null ? assoc.percentage : 'Unknown',
               dosage: assoc.dosage !== null ? assoc.dosage : 'Unknown',
             };
           });
-        stepChemicals.forEach((chemical, chemicalIndex) => {
+        stepChemicals.forEach((chemical:any, chemicalIndex:any) => {
           const rowKey = `${recipeIndex}-${stepIndex}-${chemicalIndex}-${recipe.recipe || recipe.id}-${step.step_no}-${chemical.chemical_name}`;
 
           if (!rowSet.has(rowKey)) {
@@ -357,6 +333,7 @@ export async function GET(request:any) {
               rpm: step.rpm,
               centigrade: step.centigrade,
               ph: step.ph,
+              lr: step.lr,
               tds: step.tds,
               tss: step.tss,
               minutes: step.minutes,
@@ -389,6 +366,7 @@ export async function GET(request:any) {
               rpm: step.rpm,
               centigrade: step.centigrade,
               ph: step.ph,
+              lr: step.lr,
               tds: step.tds,
               tss: step.tss,
               minutes: step.minutes,
@@ -408,7 +386,7 @@ export async function GET(request:any) {
           cell.border = { bottom: { style: 'thick', color: { argb: '000000' } } }; 
         }
 
-        const sectionEndColumns = [6, 13, 20, 24,27]; 
+        const sectionEndColumns = [6, 13, 21, 25,28]; 
 
         sectionEndColumns.forEach(colNum => {
           for (let rowNum = firstStepRow; rowNum <= lastRow.number; rowNum++) {
@@ -433,7 +411,6 @@ export async function GET(request:any) {
         column.alignment = { horizontal: 'center', vertical: 'middle' };
       }
     });
-
     const buffer = await workbook.xlsx.writeBuffer();
 
     return new NextResponse(buffer, {

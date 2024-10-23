@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { Card, Row, Col, Typography, Spin, Empty, Button, message, Upload, Modal, Input, Pagination, Popconfirm, Tabs, Table, Radio } from 'antd';
 import Link from 'next/link';
 import axios from 'axios';
@@ -10,6 +10,7 @@ import { RcFile } from 'antd/es/upload';
 import { response } from 'express';
 import {formatDate} from '@/utils/formatDate'
 import { UploadFile, UploadProps } from 'antd/lib';
+import { headers } from 'next/headers';
 
 const { Title, Text } = Typography;
 
@@ -41,7 +42,7 @@ const Recipes = () => {
   const [modalType, setModalType] = useState('success'); // 'success' or 'failed'
   const [showPageElements, setShowPageElements] = useState(true); // State to control visibility
 const [position, setPosition] = useState<'success'| 'failed'>('success');
-const [isLoading,setIsLoading]=useState<boolean>(false);
+const [isLoading,setIsLoading]=useState<boolean>(true);
   // State for success and failure uploads
   // const [successUploads, setSuccessUploads] = useState<string[]>([]);
   let [getRecipeCounter, setGetRecipeCounter] = useState<number>(0);
@@ -57,7 +58,9 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   useEffect(() => {
     fetchRecipes();
   }, []);
-  
+  useEffect(() => {
+
+  }, [isLoading]);
 
   const fetchRecipes = async () => {
     !loading && setLoading(true)
@@ -76,6 +79,12 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
     }
   };
 
+  const handleRemove = ((file: UploadFile) => {
+    const newFileList = fileList.filter(item => item.uid !== file.uid);
+    setFileList(newFileList);
+    return true;
+  })
+
   const handleDelete = async (id: number) => {
     try {
       await axios.delete(`/api/deleteRecipe/${id}`);
@@ -87,16 +96,46 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
     }
   };
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  // let abc = []
+
+  // *************************************************************
   const handleFile: UploadProps['onChange'] = (info) => {
-    setFileList([...info.fileList]);
-  }
+    const { file, fileList: currentFileList } = info;
 
+    // Update the file list, and track status for progress/feedback
+    setFileList([...currentFileList]);
 
-  // useEffect(() => {
-  //   // console.log(files)
-  // }, [files]);
+    // // if (file.status === 'uploading') {
+    //   setIsLoading(true);
+    // // }
+    const isAnyFileUploading = currentFileList.some((file) => file.status === 'uploading');
 
+    // Set the loading state based on whether any file is still uploading
+    setIsLoading(isAnyFileUploading);
+    // if (file.status === 'done') {
+    //   setIsLoading(false);
+    // }
+    //   message.success(`${file.name} uploaded successfully`);
+    // } else if (file.status === 'error') {
+    //   setIsLoading(false);
+    //   message.error(`${file.name} upload failed.`);
+    // }
+  };
+
+  // const beforeUpload = (file: UploadFile) => {
+  //   // File size validation (optional)
+  //   const isExcel = file.type === 'application/vnd.ms-excel' || 
+  //                   file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+  //   if (!isExcel) {
+  //     message.error('You can only upload Excel files!');
+  //     return Upload.LIST_IGNORE;
+  //   }
+
+  //   // Optionally validate file size, limit to 10MB for example
+
+  //   return true; // Proceed with the upload
+  // };
+  // ******************************************************************
   const handleExport = async () => {
     if (!startDate || !endDate) {
       message.error('Please select both start and end dates');
@@ -108,11 +147,16 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
     setIsExporting(true);
 
     try {
-      const response = await axios.get('/api/exportRecipes', {
+      const responseResult = await axios.get('/api/getExportRecipe', {
         params: { start_date: startDate, end_date: endDate },
+        responseType: 'json',
+      });
+      const data = responseResult.data.files;
+      console.log(data);
+      const response = await axios.post('/api/exportRecipes', {data},
+        {headers:{'Content-Type': 'application/json'},
         responseType: 'blob',
       });
-
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -156,16 +200,13 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
 
   // const dataA = []
 
-  
+
   const handleFailedFiles = async () => {
 
     try{
       const response = await axios.get('/api/getFailedFiles/');
       const data = response.data;
-      // const result = await response.data;
-      // data.files.map((file:any,index:number)=>{dataSource.title=file.title,dataSource.created_at=file.created_at})
-      // console.log(response.data)
-      // data.
+
       let dataSet:any[] = []
       data.files.forEach((file:any,index:number)=>{
         // console.log(file)
@@ -187,6 +228,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
       message.error("Failed to fetch failed files");
     }
   }
+
 
   // useEffect(() => {
   //   handleFailedFiles();
@@ -236,31 +278,23 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   //     setUploading(false);
   //   }
 
-  let saveBulkRecipes = async (fileDataArray:any) => {
+  let saveBulkRecipes = async (fileDataArray:any, BatchSize:number, successNames:string[][], duplicates:string[][]) => {
 
     
-      let successNames: string[][] = [];
-      let duplicates: string[][] = [];
-      // Step 2: Batch save recipes
-      const batchSize = 50; // Set batch size to 50 for optimal performance
- 
+      
+      // Step 2: Batch save recipes 
         try {
 
          
-          const reponse = await axios.post('/api/saveBulkRecipes/', fileDataArray, {
+          const reponse = await axios.post('/api/saveBulkRecipes/', {fileDataArray,BatchSize},  {
             headers: { 'Content-Type': 'application/json' },
           });
           // console.log(reponse)
-          // Collect successful file names for this batch
-          duplicates.push(reponse.data.message.duplicates)
-          successNames.push(reponse.data.message.successful)
-          duplicates[0].length>0?duplicates[0].forEach((x) => {message.error(`${x} is duplicate`)  }):null
-          successNames[0].length>0?successNames[0].forEach((x) => {message.success(`${x} is successfully uploaded`)}):null
-          successNames = [];
-          
           setIsModalOpen(false);
+          // Collect successful file names for this batch
+          reponse.data.message.duplicates?reponse.data.message.duplicates.forEach((duplicate:any) => duplicates.push(duplicate)):null;
+          reponse.data.message.successful?reponse.data.message.successful.forEach((success:any) => successNames.push(success)):null;
           
-
         return reponse;
         } catch (error) {
           console.error('Error uploading or saving files:', error);
@@ -288,8 +322,10 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
 
 
 
-  const handleUpload = async (files: UploadFile[]) => {
-    const BATCH_SIZE = 40;
+ const handleUpload = async (files: UploadFile[]) => {
+  let successNames: string[][] = [];
+  let duplicates: string[][] = [];
+    const BATCH_SIZE = 35;
     let postRecipeCounter = 0;
   
     const failedNames: string[] = [];
@@ -324,7 +360,7 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   
         // Handle successful recipes
         if (uploadResponse.data.recipes) {
-          await saveBulkRecipes(uploadResponse.data.recipes);
+          await saveBulkRecipes(uploadResponse.data.recipes,BATCH_SIZE,successNames,duplicates);
         }
         postRecipeCounter++;
       } catch (error) {
@@ -341,6 +377,12 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
       await processBatch(batch); // Wait for batch to process
       console.log(`Processed batch: ${Math.ceil((i + 1) / BATCH_SIZE)}`);
     }
+    // console.log(duplicates);
+          duplicates.length>0?message.error(`${duplicates.length} files are duplicate`):null
+          successNames.length>0?message.success(`${successNames.length} files are successfully uploaded`):null
+          // successNames = [];
+          // duplicates = [];  
+          // console.log(duplicates);
   fetchRecipes();
     // After all batches are processed
     setFileList([]);
@@ -348,7 +390,9 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
   
 
   const showModal = () => setIsModalOpen(true);
-  const handleCancel = () => setIsModalOpen(false);
+  const handleCancel = () => {
+    setIsModalOpen(false)
+    setFileList([]);};
 
   const filteredRecipes = recipes.filter(recipe =>
     recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -430,19 +474,14 @@ const [isLoading,setIsLoading]=useState<boolean>(false);
           </div>
         </div>
         <Modal title="Upload File" visible={isModalOpen} onCancel={handleCancel} footer={null}>
-          {uploading ? (
-            <center><Spin size="large" style={{ textAlign: 'center', padding: '2rem' }} /></center>
-          ) : (
             <>
-
-            <Upload  defaultFileList={fileList}  onChange={handleFile} accept=".xlsx, .xls" multiple>
-              <Button icon={<UploadOutlined />}>Click to Upload</Button>
+            <Button type="primary" className='mr-3' onClick={()=>{handleUpload(fileList)}} disabled={isLoading} >{isLoading ? 'Uploading...' : 'Start Upload'}</Button>
+            <Upload  defaultFileList={fileList}  onChange={handleFile} onRemove={handleRemove}  accept=".xlsx, .xls" multiple>
+              <Button className='mr-3' icon={<UploadOutlined />} >Click to Upload</Button>
+              <>{fileList.length} files selected</>
             </Upload>
-            <Button type="primary" className='mt-4' onClick={()=>{handleUpload(fileList)}} disabled={isLoading} >Confirm</Button>
-
             </>
-          )}
-        </Modal>
+         </Modal>
        <> {position === 'success' ?(<>
         {Object.keys(groupedRecipes).length === 0 ? (
           <Empty description="No recipes found" />
