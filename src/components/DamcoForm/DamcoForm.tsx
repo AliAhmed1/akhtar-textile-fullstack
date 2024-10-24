@@ -17,10 +17,10 @@ type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
 
 let first = false
 const DamcoForm: React.FC = () => {
-const [form] = Form.useForm();
-const tableRef = useRef<any>(null);
-const [tableData, setTableData] = useState<TableData[]>([]);
-const [chemicalOptions, setChemicalOptions] = useState<string[]>([]);
+  const [form] = Form.useForm();
+  const tableRef = useRef<any>(null);
+  const [tableData, setTableData] = useState<TableData[]>([]);
+  const [chemicalOptions, setChemicalOptions] = useState<string[]>([]);
 const [position, setPosition] = useState<'success'| 'failed'>('success');
 const [searchTerm, setSearchTerm] = useState<string>('');
 const [startDate, setStartDate] = useState<string | null>(null);
@@ -34,12 +34,12 @@ const [fileList, setFileList] = useState<UploadFile[]>([]);
 //     console.log(date, dateString);
 //   };
   // const handleFiles = () => {
-  //   setPosition('failed');
-  // };
+    //   setPosition('failed');
+    // };
+const checkFetchOnce = useCheckFetchOnce();
 useEffect(() => {
-  if(!first){
+  if(checkFetchOnce()){
   handleFailedFiles(position, "useEffect");
-  first = true
   }
 },[]);
 
