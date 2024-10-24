@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Form, Input, InputNumber, Select, Row, Col, Button, Table, message, Upload } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Modal, Form, Input, InputNumber, Select, Row, Col, Button, Table, message, Upload, Spin } from 'antd';
+import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { usePathname } from 'next/navigation';
 import type { DatePickerProps } from 'antd';
@@ -23,10 +23,11 @@ const [searchTerm, setSearchTerm] = useState<string>('');
 const [startDate, setStartDate] = useState<string | null>(null);
 const [endDate, setEndDate] = useState<string | null>(null);
 const [uploading, setUploading] = useState<boolean>(false);
+const [loading, setLoading] = useState<boolean>(false);
 const [isExporting, setIsExporting] = useState<boolean>(false);
-const onChange: DatePickerProps['onChange'] = (date, dateString) => {
-    console.log(date, dateString);
-  };
+// const onChange: DatePickerProps['onChange'] = (date, dateString) => {
+//     console.log(date, dateString);
+//   };
   // const handleFiles = () => {
   //   setPosition('failed');
   // };
@@ -78,12 +79,16 @@ useEffect(() => {
     // console.log(x);
     console.log(pos);
     try {
+      setLoading(true);
       const response = await axios.get('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/damco-records',{
         headers: { status: pos},
         params:  (startDate && endDate) ? { start_date: startDate, end_date: endDate } : undefined, 
         responseType: 'json',});
         // console.log(response.data.damco_records);
+        Number(response.data.damco_records.gross_weight)
         setTableData(response.data.damco_records);
+
+      setLoading(false);
     } catch (error) {
       message.error("Failed to fetch failed records");
     }
@@ -104,7 +109,7 @@ useEffect(() => {
     carton_qty: string;
     ctn_type: string;
     carton_cbm: string;
-    gross_weight: string;
+    gross_weight: number;
     booking_id: string;
     booking_status:string;
     timestamp: string;
@@ -123,6 +128,7 @@ useEffect(() => {
     title: capitalizeTitle('PO Number'),
     dataIndex: 'po_number',
     key: 'po_number',
+    
   },
   {
     title: capitalizeTitle('Plan hod'),
@@ -229,7 +235,7 @@ useEffect(() => {
 
       <Row style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
         <Col>
-          <h1 className="text-[#343C6A] text-[20px] font-bold md:mr-32 lg:mr-112 xl:mr-192"> Damco Data</h1>
+          <h1 className="text-[#343C6A] text-[20px] font-bold md:mr-28 lg:mr-112 xl:mr-192"> Damco Data</h1>
         </Col>
         <Col>
           <UtilityPanel
@@ -260,14 +266,17 @@ useEffect(() => {
 
 
 <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '15px', }}>
-          <Table
+  {loading ?  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+  <Spin indicator={<LoadingOutlined spin />} size="large" />
+</div>
+: <Table
             ref={tableRef}
             columns={columns}
             dataSource={tableData}
             // pagination={false}
             scroll={{ x: 'max-content' }}
-
-          />
+          />}
+          
         </div>
 
 
