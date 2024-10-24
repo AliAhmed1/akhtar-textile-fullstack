@@ -516,11 +516,9 @@ const RecipeForm: React.FC = () => {
   };
 
   useEffect(() => {
-
-
     const id = pathname?.split("/").pop();
     if (checkFetchOnce()) {
-      if (id) {
+      if (id && id !== "upload-recipe") {
         fetchRecipe(id);
         fetchChemicals(); // Fetch chemicals when recipe loads
       }

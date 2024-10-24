@@ -12,6 +12,7 @@ import { formatDate } from '@/utils/formatDate'
 import { UploadFile, UploadProps } from 'antd/lib';
 import { headers } from 'next/headers';
 import useCheckFetchOnce from '@/utils/useCheckFetchOnce';
+import UtilityPanel from '@/components/UtilityPanel/UtilityPanel';
 
 const { Title, Text } = Typography;
 
@@ -53,7 +54,7 @@ const Recipes = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(18); // Adjust page size here
 
-  const exportSpinner = <LoadingOutlined style={{ fontSize: 18, color: '#ffffff' }} spin />;
+
   const pageLoadingSpinner = <LoadingOutlined style={{ fontSize: 48, color: '#800080' }} spin />;
   const checkFetchOnce = useCheckFetchOnce();
 
@@ -65,7 +66,11 @@ const Recipes = () => {
   useEffect(() => {
 
   }, [isLoading]);
-
+  useEffect(() => {
+    if (position === 'failed') {
+      handleFailedFiles();
+    }
+  }, [position])
   const fetchRecipes = async () => {
     !loading && setLoading(true)
     try {
@@ -207,7 +212,7 @@ const Recipes = () => {
 
 
   const handleFailedFiles = async () => {
-
+    console.log("handleFailedFiles")
     try {
       const response = await axios.get('/api/getFailedFiles/');
       const data = response.data;
@@ -226,6 +231,8 @@ const Recipes = () => {
       })
       setDataSource(dataSet)
       console.log(dataSource)
+      // console.log(result);
+      // console.log(dataSource)
       // console.log(result);
       // // reponse.data.map((x)=>failedFiles.created_at=x.created_at)
       // console.log(failedFiles);
@@ -438,34 +445,33 @@ const Recipes = () => {
       {!showPageElements && <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><Spin indicator={pageLoadingSpinner} /></div>} {/* Optional loading spinner */}
       {showPageElements && (
         <div style={{ padding: '2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <Title level={1} style={{ margin: 0 }}>Recipes</Title>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <Radio.Group value={position} onChange={(e) => setPosition(e.target.value)}>
-                <div style={{ display: 'flex' }}>
-                  <Radio.Button value="success" >success</Radio.Button>
-                  <Radio.Button onClick={handleFailedFiles} value="failed" >failed</Radio.Button>
-                </div>
-              </Radio.Group>
-              {/* <>{console.log(position)}</> */}
-              <Input
-                placeholder="Search by recipe name"
-                prefix={<SearchOutlined />}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <div className="flex gap-2 md:absolute md:left-[70.5%] md:top-[10%] md:mb-4 lg:absolute lg:left-[76.5%] lg:top-[10.5%] xl:static xl:mb-0" >
-                <label style={{ color: '#797FE7' }}>From: </label>
-                <input style={{ textAlign: 'center' }} type="date" onChange={(e) => setStartDate(e.target.value)} />
-                <label style={{ color: '#797FE7' }}>To: </label>
-                <input style={{ textAlign: 'center' }} type="date" onChange={(e) => setEndDate(e.target.value)} />
-              </div>
-              <Button type="primary" onClick={handleExport} disabled={uploading} style={{ backgroundColor: '#797FE7', borderColor: '#797FE7' }}>
-                {isExporting ? <Spin indicator={exportSpinner} /> : 'Export'}
-              </Button>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
+            <div className="md:mr-32 lg:mr-116 xl:mr-112">
+              <Title level={1} >Recipes</Title>
+            </div>
+            <div className="flex gap-2 md:absolute md:left-[70%] md:top-[10%] md:mb-4 lg: absolute lg:left-[76%] lg:top-[9%] lg:mb-4 xl:relative xl:left-0 xl:mb-0">
+              <label style={{ color: '#797FE7' }}>From: </label>
+              <input style={{ textAlign: 'center' }} type="date" onChange={(e) => setStartDate(e.target.value)} />
+              <label style={{ color: '#797FE7' }}>To: </label>
+              <input style={{ textAlign: 'center' }} type="date" onChange={(e) => setEndDate(e.target.value)} />
+            </div>
+            <UtilityPanel
+              position={position}
+              setPosition={setPosition}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+              handleExport={handleExport}
+              // handleFailedFiles={handleFailedFiles}
+              uploading={uploading}
+              isExporting={isExporting} onChange={(e) => setPosition(e.target.value)}  // exportSpinner={exportSpinner}
+            />
+            <div style={{ display: 'flex', gap: '1rem' }}>
               <Button type="default" onClick={showModal} disabled={uploading} style={{ borderColor: '#797FE7' }}>
                 <UploadOutlined /> Upload
               </Button>
+
               <Popconfirm
                 title="Are you sure you want to delete all recipes?"
                 onConfirm={handleDeleteAll}
@@ -476,7 +482,6 @@ const Recipes = () => {
                   Delete All
                 </Button>
               </Popconfirm>
-
             </div>
           </div>
           <Modal title="Upload File" visible={isModalOpen} onCancel={handleCancel} footer={null}>
@@ -536,8 +541,8 @@ const Recipes = () => {
 
 
 
-              </div>
 
+              </div>
             )}
           </>) : position === 'failed' ? (
 
