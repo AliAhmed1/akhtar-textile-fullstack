@@ -62,7 +62,11 @@ const [isLoading,setIsLoading]=useState<boolean>(true);
   useEffect(() => {
 
   }, [isLoading]);
-
+useEffect(() => {
+  if(position === 'failed'){
+    handleFailedFiles();
+  }
+},[position])
   const fetchRecipes = async () => {
     !loading && setLoading(true)
     try {
@@ -203,7 +207,7 @@ const [isLoading,setIsLoading]=useState<boolean>(true);
 
 
   const handleFailedFiles = async () => {
-
+console.log("handleFailedFiles")
     try{
       const response = await axios.get('/api/getFailedFiles/');
       const data = response.data;
@@ -221,7 +225,7 @@ const [isLoading,setIsLoading]=useState<boolean>(true);
         
       })
       setDataSource(dataSet)
-      console.log(dataSource)
+      // console.log(dataSource)
 // console.log(result);
       // // reponse.data.map((x)=>failedFiles.created_at=x.created_at)
       // console.log(failedFiles);
@@ -451,11 +455,9 @@ const [isLoading,setIsLoading]=useState<boolean>(true);
               setStartDate={setStartDate}
               setEndDate={setEndDate}
               handleExport={handleExport}
-              handleFailedFiles={handleFailedFiles}
+              // handleFailedFiles={handleFailedFiles}
               uploading={uploading}
-              isExporting={isExporting} onChange={function (e: any): void {
-                throw new Error('Function not implemented.');
-              } }  // exportSpinner={exportSpinner}
+              isExporting={isExporting} onChange={(e)=> setPosition(e.target.value) }  // exportSpinner={exportSpinner}
 />
             <div style={{ display: 'flex', gap: '1rem' }}>
             <Button type="default" onClick={showModal} disabled={uploading} style={{ borderColor: '#797FE7'}}>

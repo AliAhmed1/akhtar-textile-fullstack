@@ -1,9 +1,11 @@
+"use client";
 import React, { useState } from 'react';
 import { Radio, Input, Button, Spin, Popconfirm } from 'antd';
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons';
 
-const exportSpinner = <LoadingOutlined style={{ fontSize: 18, color: '#ffffff' }} spin />;
 
+const exportSpinner = <LoadingOutlined style={{ fontSize: 18, color: '#ffffff' }} spin />;
+// const checkFetchOnce = useCheckFetchOnce();
 interface UtilityPanelProps {
   position: string;
   setPosition: (value: any) => void;
@@ -12,7 +14,7 @@ interface UtilityPanelProps {
   setStartDate: (value: string) => void;
   setEndDate: (value: string) => void;
   handleExport: () => void;
-  handleFailedFiles: () => void;
+  // handleFailedFiles: () => void;
   uploading: boolean;
   isExporting: boolean;
   onChange: (e: any) => void;
@@ -27,17 +29,18 @@ const UtilityPanel: React.FC<UtilityPanelProps> = ({
   setStartDate,
   setEndDate,
   handleExport,
-  handleFailedFiles,
+  // handleFailedFiles,
   uploading,
   isExporting,
+  onChange
 
 }) => {
   return (
     <div style={{ display: 'flex', gap: '1rem', alignContent: 'center' }}>
-      <Radio.Group value={position} onChange={(e) => setPosition(e.target.value)}>
+      <Radio.Group value={position} onChange={onChange}>
         <div style={{ display: 'flex' }}>
           <Radio.Button value="success">success</Radio.Button>
-          <Radio.Button onClick={handleFailedFiles} value="failed">failed</Radio.Button>
+          <Radio.Button value="failed">failed</Radio.Button>
         </div>
       </Radio.Group>
 

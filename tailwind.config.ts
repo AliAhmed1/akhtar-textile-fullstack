@@ -16,6 +16,7 @@ const config: Config = {
       spacing: {
         '112': '28rem',
         '116': '29rem', // Adding custom spacing for 28rem
+        '192': '48rem',
       },
     },
     screens: {
