@@ -343,6 +343,7 @@ console.log("handleFailedFiles")
         if (file.originFileObj) {
           formData.append('files', file.originFileObj);
         }
+        console.log(file.originFileObj);
       });
   
       setUploading(true);

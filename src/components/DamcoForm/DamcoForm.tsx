@@ -5,13 +5,16 @@ import { Modal, Form, Input, InputNumber, Select, Row, Col, Button, Table, messa
 import { LoadingOutlined, UploadOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { usePathname } from 'next/navigation';
-import type { DatePickerProps } from 'antd';
+import type { DatePickerProps, GetProp, UploadFile, UploadProps } from 'antd';
 import { DatePicker, Space } from 'antd';
 import UtilityPanel from '../UtilityPanel/UtilityPanel';
 import axios from 'axios';
 import useCheckFetchOnce from '@/utils/useCheckFetchOnce';
+// import { UploadProps } from 'antd/lib';
 const { Option } = Select;
 // const checkFetchOnce = useCheckFetchOnce();
+type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
+
 let first = false
 const DamcoForm: React.FC = () => {
 const [form] = Form.useForm();
@@ -24,7 +27,9 @@ const [startDate, setStartDate] = useState<string | null>(null);
 const [endDate, setEndDate] = useState<string | null>(null);
 const [uploading, setUploading] = useState<boolean>(false);
 const [loading, setLoading] = useState<boolean>(false);
+const [automationId, setAutomationId] = useState<boolean>(false);
 const [isExporting, setIsExporting] = useState<boolean>(false);
+const [fileList, setFileList] = useState<UploadFile[]>([]);
 // const onChange: DatePickerProps['onChange'] = (date, dateString) => {
 //     console.log(date, dateString);
 //   };
@@ -37,6 +42,21 @@ useEffect(() => {
   first = true
   }
 },[]);
+
+const props: UploadProps = {
+  onRemove: ((file: UploadFile) => {
+    const newFileList = fileList.filter(item => item.uid !== file.uid);
+    setFileList(newFileList);
+    // console.log("file",fileList);
+    return true;
+  }),
+  beforeUpload: (file) => {
+    setFileList([...fileList, file]);
+
+    return false;
+  },
+  fileList,
+};
   const handleExport = async () => {
     if (!startDate || !endDate) {
       message.error('Please select both start and end dates');
@@ -93,7 +113,52 @@ useEffect(() => {
       message.error("Failed to fetch failed records");
     }
   }
-
+const handleExceute = async () => {
+  console.log('username',form.getFieldValue('username'));
+  console.log('password',form.getFieldValue('password'));
+  try{
+    const formData = new FormData();
+    fileList.forEach((file) => {
+      formData.append('file', file as FileType);
+      console.log(file);
+    });
+    setUploading(true);
+const response = await axios.post('http://127.0.0.1:8000/damco-execute',formData, {
+  headers: {
+    username: form.getFieldValue('username'),
+    password: form.getFieldValue('password'),
+  }
+})
+  }catch(err){
+    console.log(err);
+  } finally {
+    setFileList([]);
+    setUploading(false);
+  }
+}
+const handleAmmend = async () => {
+  try{
+    const formData = new FormData();
+    fileList.forEach((file) => {
+      formData.append('file', file as FileType);
+      console.log(file);
+    });
+    console.log("username: ",form.getFieldValue('username'),
+    "password: ",form.getFieldValue('password'));
+    setUploading(true);
+const response = await axios.post('http://127.0.0.1:8000/damco-ammend',formData, {
+  headers: {
+    username: form.getFieldValue('username'),
+    password: form.getFieldValue('password'),
+  }
+})
+  }catch(err){
+    console.log(err);
+  }finally {
+    setFileList([]);
+    setUploading(false);
+  }
+}
   // const onChangeStatus = (e: any) => {
   //   console.log("Within function: ",e.target.value)
   //   setPosition(e.target.value=="success" ? "success" : "failed");
@@ -182,10 +247,13 @@ useEffect(() => {
   },
 ];
 
-  return (  <>
+  return ( uploading ? <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',gap: '1rem' }}>
+    <Spin indicator={<LoadingOutlined spin />} size="large" />
+    Automation in progress ...
+  </div> : <>
           <Row style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Col>
-          <h1 style={{ color: '#343C6A', fontSize: "20px", fontWeight: "bold" }}> Filters</h1>
+          <h1 style={{ color: '#343C6A', fontSize: "20px", fontWeight: "bold" }}> Damco Automation</h1>
         </Col>
 
       </Row>
@@ -212,10 +280,10 @@ useEffect(() => {
           </Row>
           <Row className='gap-6'>
           <Col>
-          <Button type="primary" style={{  backgroundColor: '#797FE7'}} >Execute</Button>
+          <Button type="primary" style={{  backgroundColor: '#797FE7'}} onClick={handleExceute}>Execute</Button>
         </Col>
         <Col>
-        <Button type="primary" style={{ backgroundColor: '#797FE7'}} >Ammend</Button>
+        <Button type="primary" style={{ backgroundColor: '#797FE7'}} onClick={handleAmmend}>Ammend</Button>
         </Col>
           </Row>
          
@@ -226,7 +294,7 @@ useEffect(() => {
         <div className=' w-1/2'>
         <div style={{ borderRadius: '15px', padding: '60px', backgroundColor: 'white', border: '2px dashed #D0D6D6' , gap: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
           Upload excel
-      <Upload>
+      <Upload {...props} accept=".xlsx, .xls" >
         <Button icon={<UploadOutlined />}>Select File</Button>
       </Upload>
       </div>
