@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { message, Button } from 'antd';
 import { LockOutlined, UnlockOutlined, UserOutlined } from '@ant-design/icons';
 import useCheckFetchOnce from '@/utils/useCheckFetchOnce';
+import Cookies from 'js-cookie';
 
 interface LoginProps {
   username: string;
@@ -33,6 +34,7 @@ const LoginForm: React.FC<ILoginForm> = ({ userId }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const checkFetchOnce = useCheckFetchOnce();
+  const cache = new Map<string, { userId?: string; isUnauthorized?: boolean }>();
 
 
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -70,12 +72,13 @@ const LoginForm: React.FC<ILoginForm> = ({ userId }) => {
   };
 
   useEffect(() => {
+    const authToken = Cookies?.get('token');
     if (checkFetchOnce()) {
-      if (!userId) {
+      if (authToken) {
         fetch("/api/logout", { method: "POST" });
       }
     }
-  }, [userId])
+  }, [])
 
 
   return (
