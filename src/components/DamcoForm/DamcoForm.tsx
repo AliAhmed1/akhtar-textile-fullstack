@@ -11,13 +11,12 @@ import UtilityPanel from '../UtilityPanel/UtilityPanel';
 import axios from 'axios';
 import useCheckFetchOnce from '@/utils/useCheckFetchOnce';
 const { Option } = Select;
-// const checkFetchOnce = useCheckFetchOnce();
 let first = false
 const DamcoForm: React.FC = () => {
-const [form] = Form.useForm();
-const tableRef = useRef<any>(null);
-const [tableData, setTableData] = useState<TableData[]>([]);
-const [chemicalOptions, setChemicalOptions] = useState<string[]>([]);
+  const [form] = Form.useForm();
+  const tableRef = useRef<any>(null);
+  const [tableData, setTableData] = useState<TableData[]>([]);
+  const [chemicalOptions, setChemicalOptions] = useState<string[]>([]);
 const [position, setPosition] = useState<'success'| 'failed'>('success');
 const [searchTerm, setSearchTerm] = useState<string>('');
 const [startDate, setStartDate] = useState<string | null>(null);
@@ -28,12 +27,12 @@ const onChange: DatePickerProps['onChange'] = (date, dateString) => {
     console.log(date, dateString);
   };
   // const handleFiles = () => {
-  //   setPosition('failed');
-  // };
+    //   setPosition('failed');
+    // };
+const checkFetchOnce = useCheckFetchOnce();
 useEffect(() => {
-  if(!first){
+  if(checkFetchOnce()){
   handleFailedFiles(position, "useEffect");
-  first = true
   }
 },[]);
   const handleExport = async () => {
