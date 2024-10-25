@@ -8,11 +8,8 @@ const exportSpinner = <LoadingOutlined style={{ fontSize: 18, color: '#ffffff' }
 // const checkFetchOnce = useCheckFetchOnce();
 interface UtilityPanelProps {
   position: string;
-  setPosition: (value: any) => void;
   searchTerm: string;
   setSearchTerm: (value: string) => void;
-  setStartDate: (value: string) => void;
-  setEndDate: (value: string) => void;
   handleExport: () => void;
   // handleFailedFiles: () => void;
   uploading: boolean;
@@ -23,11 +20,8 @@ interface UtilityPanelProps {
 
 const UtilityPanel: React.FC<UtilityPanelProps> = ({
   position,
-  setPosition,
   searchTerm,
   setSearchTerm,
-  setStartDate,
-  setEndDate,
   handleExport,
   // handleFailedFiles,
   uploading,
@@ -45,7 +39,7 @@ const UtilityPanel: React.FC<UtilityPanelProps> = ({
       </Radio.Group>
 
       <Input
-        placeholder="Search by recipe name"
+        placeholder="Search by"
         prefix={<SearchOutlined />}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}

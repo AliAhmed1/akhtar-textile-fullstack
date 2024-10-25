@@ -10,6 +10,7 @@ import { DatePicker, Space } from 'antd';
 import UtilityPanel from '../UtilityPanel/UtilityPanel';
 import axios from 'axios';
 import useCheckFetchOnce from '@/utils/useCheckFetchOnce';
+import { formatDate } from '@/utils/formatDate';
 // import { UploadProps } from 'antd/lib';
 const { Option } = Select;
 // const checkFetchOnce = useCheckFetchOnce();
@@ -20,7 +21,8 @@ const DamcoForm: React.FC = () => {
   const [form] = Form.useForm();
   const tableRef = useRef<any>(null);
   const [tableData, setTableData] = useState<TableData[]>([]);
-  const [chemicalOptions, setChemicalOptions] = useState<string[]>([]);
+  // const [chemicalOptions, setChemicalOptions] = useState<string[]>([]);
+  const [damco_records, setDamco_records] = useState<any[]>([]);
 const [position, setPosition] = useState<'success'| 'failed'>('success');
 const [searchTerm, setSearchTerm] = useState<string>('');
 const [startDate, setStartDate] = useState<string | null>(null);
@@ -42,6 +44,10 @@ useEffect(() => {
   handleFailedFiles(position, "useEffect");
   }
 },[]);
+
+// useEffect(() => {
+//   setTableData(filterData);
+// }, [tableData]);
 
 const props: UploadProps = {
   onRemove: ((file: UploadFile) => {
@@ -93,6 +99,19 @@ const props: UploadProps = {
       setIsExporting(false);
     }
   };
+//  let input: string = '';
+  const filterData: TableData[] = tableData.filter((item:TableData) => (
+    item.id.toString().includes(searchTerm) ||
+    item.po_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.plan_hod.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.country.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.order_qty.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.carton_qty.toString().includes(searchTerm) ||
+    item.ctn_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.carton_cbm.toString().includes(searchTerm) ||
+    item.gross_weight.toString().includes(searchTerm) ||
+    item.booking_id.toLowerCase().includes(searchTerm.toLowerCase())
+  ));
 
   const handleFailedFiles = async (pos: any, x: any) => {
 
@@ -104,8 +123,7 @@ const props: UploadProps = {
         headers: { status: pos},
         params:  (startDate && endDate) ? { start_date: startDate, end_date: endDate } : undefined, 
         responseType: 'json',});
-        // console.log(response.data.damco_records);
-        Number(response.data.damco_records.gross_weight)
+        // Number(response.data.damco_records.gross_weight)
         setTableData(response.data.damco_records);
 
       setLoading(false);
@@ -171,9 +189,9 @@ const response = await axios.post('http://127.0.0.1:8000/damco-ammend',formData,
     plan_hod: string;
     country: string;
     order_qty: string;
-    carton_qty: string;
+    carton_qty: number;
     ctn_type: string;
-    carton_cbm: string;
+    carton_cbm: number;
     gross_weight: number;
     booking_id: string;
     booking_status:string;
@@ -214,6 +232,7 @@ const response = await axios.post('http://127.0.0.1:8000/damco-ammend',formData,
     title: capitalizeTitle('Carton qty'),
     dataIndex: 'carton_qty',
     key: 'carton_qty',
+    render: (carton_qty) => parseFloat(carton_qty).toFixed(2)
   },
   {
     title: capitalizeTitle('Carton type'),
@@ -224,11 +243,13 @@ const response = await axios.post('http://127.0.0.1:8000/damco-ammend',formData,
     title: capitalizeTitle('Carton cbm'),
     dataIndex: 'carton_cbm',
     key: 'carton_cbm',
+    render: (carton_cbm) => parseFloat(carton_cbm).toFixed(2)
   },
   {
     title: capitalizeTitle('Gross weight'),
     dataIndex: 'gross_weight',
     key: 'gross_weight',
+    render: (gross_weight) => parseFloat(gross_weight).toFixed(2)
   },
   {
     title: capitalizeTitle('Booking id'),
@@ -244,6 +265,7 @@ const response = await axios.post('http://127.0.0.1:8000/damco-ammend',formData,
     title: capitalizeTitle('Created at'),
     dataIndex: 'timestamp',
     key: 'timestamp',
+    render: (timestamp) => formatDate(timestamp),
   },
 ];
 
@@ -308,13 +330,9 @@ const response = await axios.post('http://127.0.0.1:8000/damco-ammend',formData,
         <Col>
           <UtilityPanel
               position={position}
-              setPosition={setPosition}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              setStartDate={setStartDate}
-              setEndDate={setEndDate}
               handleExport={handleExport}
-              // handleFailedFiles={handleFailedFiles}
               uploading={uploading}
               isExporting={isExporting} onChange={(e) => {
                 handleFailedFiles(e.target.value, "button")
@@ -337,19 +355,17 @@ const response = await axios.post('http://127.0.0.1:8000/damco-ammend',formData,
   {loading ?  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
   <Spin indicator={<LoadingOutlined spin />} size="large" />
 </div>
-: <Table
+
+: 
+<Table
             ref={tableRef}
             columns={columns}
-            dataSource={tableData}
+            dataSource={filterData}
             // pagination={false}
             scroll={{ x: 'max-content' }}
           />}
           
         </div>
-
-
-
-
   </>
 
   );

@@ -412,6 +412,7 @@ const Recipes = () => {
     recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
   const handlePaginationChange = (page: number, pageSize?: number) => {
     setCurrentPage(page);
     if (pageSize) setPageSize(pageSize);
@@ -458,11 +459,8 @@ const Recipes = () => {
             </div>
             <UtilityPanel
               position={position}
-              setPosition={setPosition}
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
-              setStartDate={setStartDate}
-              setEndDate={setEndDate}
               handleExport={handleExport}
               // handleFailedFiles={handleFailedFiles}
               uploading={uploading}
