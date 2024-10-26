@@ -74,20 +74,20 @@ const props: UploadProps = {
     setIsExporting(true);
 
     try {
-      const responseResult = await axios.get('/api/getExportRecipe', {
-        params: { start_date: startDate, end_date: endDate },
-        responseType: 'json',
-      });
-      const data = responseResult.data.files;
+      const responseResult = await axios.get('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/damco-records',{
+        headers: { status: position},
+        params:  (startDate && endDate) ? { start_date: startDate, end_date: endDate } : undefined, 
+        responseType: 'json',});
+      const data = responseResult.data.damco_records;
       console.log(data);
-      const response = await axios.post('/api/exportRecipes', {data},
+      const response = await axios.post('/api/exportDamcoRecords', {data},
         {headers:{'Content-Type': 'application/json'},
         responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'recipes.xlsx');
+      link.setAttribute('download', `damco ${position} records.xlsx`);
       document.body.appendChild(link);
       link.click();
       message.success('File Downloaded');
@@ -177,11 +177,7 @@ const response = await axios.post('http://127.0.0.1:8000/damco-ammend',formData,
     setUploading(false);
   }
 }
-  // const onChangeStatus = (e: any) => {
-  //   console.log("Within function: ",e.target.value)
-  //   setPosition(e.target.value=="success" ? "success" : "failed");
-  //   handleFailedFiles(e.target.value);
-  // }
+
   interface TableData {
     // key: number;
     id: number;

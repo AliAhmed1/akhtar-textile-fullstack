@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+   "run-api-in-powershell": "start powershell -NoExit -Command \"cd 'C:\\Users\\Saad\\Desktop\\AT_Aut\\Akhtar_Textile_Automation'; .\\path\\to\\your\\venv\\Scripts\\Activate; uvicorn Apis.Akhtar_apis:app --reload\"",
+    "start:all": "concurrently \"npm run build\" \"npm run run-api-in-powershell\"",
     "lint": "next lint"
   },
   "dependencies": {
@@ -48,6 +50,7 @@
     "@types/pg": "^8.11.8",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "concurrently": "^9.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8",
