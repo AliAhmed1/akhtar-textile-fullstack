@@ -4,6 +4,7 @@ import ExcelJS from 'exceljs';
 export async function POST(request: NextRequest) {
     try{
         const req = await request.json();
+        console.log(req);
         const data = req.data;
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Damco Records');
@@ -13,9 +14,10 @@ export async function POST(request: NextRequest) {
             { header: 'Country', key: 'country', width: 20 },
             { header: 'Order Qty', key: 'order_qty', width: 20 },
             { header: 'CARTON QTY', key: 'carton_qty', width: 20 },
-            { header: 'Gross WT', key: 'ctn_type', width: 20 },
+            { header: 'GROSS WT', key: 'gross_weight', width: 20 },
             { header: 'CARTON CBM', key: 'carton_cbm', width: 20 },
-            { header: 'CTN Type', key: 'gross_weight', width: 20 },
+            { header: 'CTN Type', key: 'ctn_type', width: 20 },
+            {header: 'Booking id', key:'booking_id', width:20}
         ];
         const headerRow = worksheet.getRow(1);
         headerRow.font = { bold: true };
@@ -25,16 +27,25 @@ export async function POST(request: NextRequest) {
         let firstStepRow = worksheet.lastRow ? worksheet.lastRow.number + 1 : 1;
         data.forEach((record:any) => {
             if (!rowSet.has(record.id)) {
-                worksheet.addRow({
+                const cell = worksheet.addRow({
                     po_number: record.po_number,
-                    plan_hod: record.plan_hod,
+                    plan_hod: new Date(record.plan_hod),
                     country: record.country,
                     order_qty: record.order_qty,
-                    carton_qty: record.carton_qty,
+                    carton_qty: parseFloat(record.carton_qty),
                     gross_weight: record.gross_weight,
-                    carton_cbm: record.carton_cbm,
+                    carton_cbm: parseFloat(record.carton_cbm),
                     ctn_type: record.ctn_type,
                 });
+                const plan_hodCell = cell.getCell(2).address;
+                const carton_cbmCell = cell.getCell(7).address;
+                const carton_qtyCell = cell.getCell(5).address;
+                worksheet.getCell(`${plan_hodCell}`).numFmt = 'd-mmm-yyyy';
+                worksheet.getCell(`${carton_cbmCell}`).numFmt = '0.00';
+                worksheet.getCell(`${carton_qtyCell}`).numFmt = '0.00';
+                const gross_weightCell = cell.getCell(6).address;
+                const order_qtyCell = cell.getCell(4).address;
+                worksheet.getCell(`${gross_weightCell}`).value = {formula: `${order_qtyCell}*0.48`};
                 rowSet.add(record.id);
             }
 
