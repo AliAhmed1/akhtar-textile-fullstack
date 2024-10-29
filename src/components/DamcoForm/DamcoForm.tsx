@@ -40,21 +40,14 @@ const [selectedAction, setSelectedAction] = useState<'Execute' | 'Ammend'>('Exec
   // const handleFiles = () => {
     //   setPosition('failed');
     // };
+   
+
 const checkFetchOnce = useCheckFetchOnce();
 useEffect(() => {
   if(checkFetchOnce()){
   handleRecords(position,selectedAction);
   }
 },[]);
-useEffect(() => {
-  // console.log(startDate)
-  if(startDate && endDate)
-  handleRecords(position,selectedAction);
-  // console.log('check');
-},[startDate, endDate]);
-// useEffect(() => {
-//   setTableData(filterData);
-// }, [tableData]);
 
 const props: UploadProps = {
   onRemove: ((file: UploadFile) => {
@@ -70,6 +63,21 @@ const props: UploadProps = {
   },
   fileList,
 };
+
+const onChangeDate = (e:any,dateTag:string) => {
+      console.log(dateTag);
+      let start = startDate, end = endDate;
+  if(dateTag==="start"){ 
+  setStartDate(e)
+  start = e;
+  }
+  if(dateTag==="end"){
+    setEndDate(e)
+    end = e;
+  }
+  handleRecords(position,selectedAction,start,end);
+}
+
   const handleExport = async () => {
     if (!startDate || !endDate) {
       message.error('Please select both start and end dates');
@@ -134,37 +142,39 @@ const props: UploadProps = {
     item.timestamp.includes(searchTerm)
   ));
 
-const fetchDamcoExecute = async (position:any) => {
+const fetchDamcoExecute = async (position:any, startDate?:string | null,endDate?:string | null) => {
   const response = await axios.get('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/damco-records',{
     headers: { status: position},
-    params:  (startDate && endDate) ? { start_date: startDate, end_date: endDate } : undefined, 
+    params:  { start_date: startDate, end_date: endDate }, 
     responseType: 'json',});
     console.log('execute',response.data.damco_records);
     return  response.data.damco_records
 }
 
-const fetchDamcoAmmend = async (position:any) => {
+const fetchDamcoAmmend = async (position:any, startDate?:string | null,endDate?:string | null) => {
   console.log('fetchDamcoAmmend',startDate, endDate); 
   const response = await axios.get('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/damco-ammend-records',{
     headers: { status: position},
-    params:  (startDate && endDate) ? { start_date: startDate, end_date: endDate } : undefined, 
+    params:  { start_date: startDate, end_date: endDate }, 
     responseType: 'json',});
     console.log('ammend',response.data.damco_ammend_records);
     return response.data.damco_ammend_records
 } 
 
-  const handleRecords = async (pos: any, key:any) => {
+  const handleRecords = async (pos: any, key:any, startDate?:string | null, endDate?:string | null) => {
     console.log('selectItem',selectedAction);
     console.log(pos);
+    console.log(key)
     try {
+      console.log('check')
       setLoading(true);
       if(key === 'Execute'){
         console.log('execute')
-      const data = await fetchDamcoExecute(pos);
+      const data = await fetchDamcoExecute(pos,startDate,endDate);
         setTableData(data);
       }else if (key === 'Ammend'){
         console.log('ammend')
-        const data = await fetchDamcoAmmend(pos)
+        const data = await fetchDamcoAmmend(pos,startDate,endDate);
         setTableData(data);
       }
       setLoading(false);
@@ -223,7 +233,7 @@ function delay(ms:any) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
   interface TableData {
-    // key: number;
+    key: number;
     id: number;
     po_number: string;
     plan_hod: string;
@@ -422,9 +432,9 @@ const handleMenuClick = async (e: { key: string }) => {
         <Col className="pb-0">
         <div className="ml-2 flex gap-2">
         <label style={{ color: '#797FE7' }}>From: </label>
-        <input style={{ textAlign: 'center' }} type="date" onChange={(e) => setStartDate(e.target.value)} />
+        <input style={{ textAlign: 'center' }} type="date" onChange={(e) => onChangeDate(e.target.value,"start")} />
         <label style={{ color: '#797FE7' }}>To: </label>
-        <input style={{ textAlign: 'center' }} type="date" onChange={(e) => setEndDate(e.target.value)} />
+        <input style={{ textAlign: 'center' }} type="date" onChange={(e) => onChangeDate(e.target.value,"end")} />
       </div></Col>
       </Row>
 {/* Table */}

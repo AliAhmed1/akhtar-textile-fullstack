@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
                     gross_weight: record.gross_weight,
                     carton_cbm: parseFloat(record.carton_cbm),
                     ctn_type: record.ctn_type,
+                    booking_id: record.booking_id,
                 });
                 const plan_hodCell = cell.getCell(2).address;
                 const carton_cbmCell = cell.getCell(7).address;
