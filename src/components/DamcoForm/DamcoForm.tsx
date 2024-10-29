@@ -46,7 +46,12 @@ useEffect(() => {
   handleRecords(position,selectedAction);
   }
 },[]);
-
+useEffect(() => {
+  // console.log(startDate)
+  if(startDate && endDate)
+  handleRecords(position,selectedAction);
+  // console.log('check');
+},[startDate, endDate]);
 // useEffect(() => {
 //   setTableData(filterData);
 // }, [tableData]);
@@ -139,6 +144,7 @@ const fetchDamcoExecute = async (position:any) => {
 }
 
 const fetchDamcoAmmend = async (position:any) => {
+  console.log('fetchDamcoAmmend',startDate, endDate); 
   const response = await axios.get('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/damco-ammend-records',{
     headers: { status: position},
     params:  (startDate && endDate) ? { start_date: startDate, end_date: endDate } : undefined, 
