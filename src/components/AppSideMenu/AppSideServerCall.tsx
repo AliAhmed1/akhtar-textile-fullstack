@@ -12,7 +12,6 @@ const AppSideServerCall = async () => {
 
     const userDataResponse = await fetch(`${url}/api/getAccessByUserId/${userId}`);
     const accessData = await userDataResponse.json();
-    console.log("userData", accessData);
     return (
         <>
             <AppSideMenu accessData={accessData} userId={userId} />
