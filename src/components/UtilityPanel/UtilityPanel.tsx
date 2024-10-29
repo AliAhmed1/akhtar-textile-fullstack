@@ -37,14 +37,14 @@ const UtilityPanel: React.FC<UtilityPanelProps> = ({
           <Radio.Button value="failed">failed</Radio.Button>
         </div>
       </Radio.Group>
-
+<div className='w-[10rem]'>
       <Input
         placeholder="Search by"
         prefix={<SearchOutlined />}
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-
+</div>
      <Button
         type="primary"
         onClick={handleExport}

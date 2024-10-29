@@ -448,7 +448,7 @@ const Recipes = () => {
       {showPageElements && (
         <div style={{ padding: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
-            <div className="md:mr-32 lg:mr-116 xl:mr-112">
+            <div className="md:mr-[10.5rem] lg:mr-116 xl:mr-112">
               <Title level={1} >Recipes</Title>
             </div>
             <div className="flex gap-2 md:absolute md:left-[70%] md:top-[10%] md:mb-4 lg: absolute lg:left-[76%] lg:top-[9%] lg:mb-4 xl:relative xl:left-0 xl:mb-0">
