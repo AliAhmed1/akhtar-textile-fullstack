@@ -2,7 +2,6 @@ import { message } from "antd";
 export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
-export const dynamic = 'force-dynamic';
 
 const pool = new Pool({
     connectionString: process.env.NEXT_PUBLIC_DATABASE_URL,
