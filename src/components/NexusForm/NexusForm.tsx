@@ -108,14 +108,14 @@ handleRecords(position,start,end);
     try {
         const data = await fetchNexus(position);
         console.log(data)
-      const response = await axios.post('/api/exportDamcoRecords', {data},
+      const response = await axios.post('/api/exportNexusRecords', {data},
         {headers:{'Content-Type': 'application/json'},
         responseType: 'blob',
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `damco execute ${position} records.xlsx`);
+      link.setAttribute('download', `nexus ${position} records.xlsx`);
       document.body.appendChild(link);
       link.click();
       message.success('File Downloaded');
@@ -157,6 +157,7 @@ handleRecords(position,start,end);
       mode: action
     }
   })
+  response.data.error && message.error(response.data.error);
     }catch(err){
       console.log(err);
     } finally {
