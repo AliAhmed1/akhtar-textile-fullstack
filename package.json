@@ -6,8 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-   "run-api-in-powershell": "start powershell -NoExit -Command \"cd 'C:\\Users\\Saad\\Desktop\\AT_Aut\\Akhtar_Textile_Automation'; .\\path\\to\\your\\venv\\Scripts\\Activate; uvicorn Apis.Akhtar_apis:app --reload\"",
-    "start:all": "concurrently \"npm run build\" \"npm run run-api-in-powershell\"",
+   "run-api": "start cmd /k \"cd ../Akhtar_Textile_Automation && .venv\\Scripts\\activate.bat && uvicorn Apis.Akhtar_apis:app --reload\"",
+   "start:all": "concurrently \"npm run build\" \"npm start\" \"npm run run-api\"",
+   "dev:all": "concurrently --kill-others --kill-others-on-fail \"npm run dev\" \"npm run run-api\"",
     "lint": "next lint"
   },
   "dependencies": {
