@@ -29,6 +29,24 @@ interface FileData {
   // Add any other properties that you expect in the response
 }
 
+const createFileChunks = (file: RcFile, chunkSize: number): RcFile[] => {
+  const chunks: RcFile[] = [];
+  let currentChunk = 0;
+  let chunkIndex = 0;
+
+  while (currentChunk < file.size) {
+    const blobChunk = file.slice(currentChunk, currentChunk + chunkSize);
+    const chunkFile = new File([blobChunk], `${file.name}.part${chunkIndex}`, {
+      type: file.type,
+    }) as RcFile;
+    chunkFile.uid = `${file.uid}-part${chunkIndex}`;
+    chunks.push(chunkFile);
+    currentChunk += chunkSize;
+    chunkIndex++;
+  }
+
+  return chunks;
+};
 
 const Recipes = () => {
   // console.log("abc")
@@ -334,31 +352,32 @@ const Recipes = () => {
 
 
 
-  const handleUpload = async (files: UploadFile[]) => {
+  const handleUpload = async (files: RcFile[], BATCH_SIZE: number, concurrentUploads: number) => {
     let successNames: string[][] = [];
     let duplicates: string[][] = [];
-    const BATCH_SIZE = 35;
     let postRecipeCounter = 0;
 
     const failedNames: string[] = [];
 
+    let currentBatchIndex = 0;
+
     // Helper function to process a batch of files
-    const processBatch = async (batch: UploadFile[]) => {
+    const processBatch = async (batch: RcFile) => {
       const formData = new FormData();
 
-      batch.forEach((file) => {
-        if (file.originFileObj) {
-          formData.append('files', file.originFileObj);
-        }
-        console.log(file.originFileObj);
-      });
-
+      // batch.forEach((file) => {
+      //   if (file) {
+      //     formData.append('files', file);
+      //   }
+      //   console.log(file);
+      // });
+      formData.append('files', batch);
       setUploading(true);
       setShowPageElements(false); // Hide elements while uploading
 
       try {
         // Step 1: Upload files
-        const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', formData, {
+        const uploadResponse = await axios.post('http://127.0.0.1:8001/uploadfile', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 
@@ -385,12 +404,30 @@ const Recipes = () => {
     };
 
     // Process files in batches of 40
-    for (let i = 0; i < files.length; i += BATCH_SIZE) {
-      const batch = files.slice(i, i + BATCH_SIZE); // Get a batch of 40 files
-      await processBatch(batch); // Wait for batch to process
-      console.log(`Processed batch: ${Math.ceil((i + 1) / BATCH_SIZE)}`);
+    while (currentBatchIndex < files.length) {
+      // Get the current batch of files
+      const currentBatch = files.slice(currentBatchIndex, currentBatchIndex + BATCH_SIZE);
+  
+      // Process each file in the batch by splitting into chunks and uploading
+      const batchUploadPromises = currentBatch.map(async (file) => {
+        const chunkSize = 5 * 1024 * 1024; // 5MB chunks
+        const fileChunks = createFileChunks(file, chunkSize);
+  
+        // Limit the number of concurrent uploads for each file
+        for (let i = 0; i < fileChunks.length; i += concurrentUploads) {
+          const chunkBatch = fileChunks.slice(i, i + concurrentUploads);
+          console.log('chunkBatch',chunkBatch);
+          await Promise.all(chunkBatch.map((chunk, index) => processBatch(chunk)));
+        }
+      });
+  
+      // Wait for the current batch to complete before proceeding to the next
+      await Promise.all(batchUploadPromises);
+  
+      // Move to the next batch
+      currentBatchIndex += BATCH_SIZE;
     }
-    // console.log(duplicates);
+
     duplicates.length > 0 ? message.error(`${duplicates.length} files are duplicate`) : null
     successNames.length > 0 ? message.success(`${successNames.length} files are successfully uploaded`) : null
     // successNames = [];
@@ -441,6 +478,35 @@ const Recipes = () => {
     }
   };
 
+  const handleUploadFiles = async (files: RcFile[]) => {
+    setLoading(true);
+    const batchSize = 10; // Process 10 files per batch
+    const concurrentUploads = 5; // Allow 5 concurrent uploads for each file chunk
+
+    try {
+      await handleUpload(files, batchSize, concurrentUploads);
+      message.success(`Files uploaded successfully.`);
+    } catch (error) {
+      message.error(`Error uploading files.`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const beforeUpload = (file: RcFile) => {
+    handleUploadFiles([file]);
+    return true; // Prevent automatic upload by Ant Design
+  };
+
+  // const customRequest = async ({ file, onSuccess, onError }: any) => {
+  //   try {
+  //     await handleUploadFiles([file]);
+  //     onSuccess("ok");
+  //   } catch (err) {
+  //     onError(err);
+  //   }
+  // };
+
   return (
 
     <>
@@ -485,8 +551,8 @@ const Recipes = () => {
           </div>
           <Modal title="Upload File" visible={isModalOpen} onCancel={handleCancel} footer={null}>
             <>
-              <Button type="primary" className='mr-3' onClick={() => { handleUpload(fileList) }} disabled={isLoading} >{isLoading ? 'Uploading...' : 'Start Upload'}</Button>
-              <Upload defaultFileList={fileList} onChange={handleFile} onRemove={handleRemove} accept=".xlsx, .xls" multiple>
+              {/* <Button type="primary" className='mr-3' onClick={() => { handleUpload(fileList) }} disabled={isLoading} >{isLoading ? 'Uploading...' : 'Start Upload'}</Button> */}
+              <Upload beforeUpload={beforeUpload} accept=".xlsx, .xls" multiple>
                 <Button className='mr-3' icon={<UploadOutlined />} >Click to Upload</Button>
                 <>{fileList.length} files selected</>
               </Upload>
