@@ -358,7 +358,7 @@ const Recipes = () => {
 
       try {
         // Step 1: Upload files
-        const uploadResponse = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile', formData, {
+        const uploadResponse = await axios.post('https://curious-fancy-hailtechnologies-e2fde36f.koyeb.app/uploadfile', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
 

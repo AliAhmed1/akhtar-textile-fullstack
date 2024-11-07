@@ -23,7 +23,7 @@ model chemical_association {
   chemicalid BigInt?
   percentage Float?
   dosage     Float?
-  chemicals  chemicals? @relation(fields: [chemicalid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chemical")
+  chemicals   ? @relation(fields: [chemicalid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chemical")
   steps      steps?     @relation(fields: [stepid], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_step")
 }
 
