@@ -74,7 +74,7 @@ useEffect(() => {
   ))
 
   const fetchNexus = async (position:any, startDate?:string | null,endDate?:string | null) => {
-    const response = await axios.get('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/nexus-records',{
+    const response = await axios.get('http://127.0.0.1:8001/nexus-records',{
       headers: { status: position},
       params:  { start_date: startDate, end_date: endDate }, 
       responseType: 'json',});
