@@ -43,17 +43,15 @@ const Recipes = () => {
   const [showPageElements, setShowPageElements] = useState(true); // State to control visibility
   const [position, setPosition] = useState<'success' | 'failed'>('success');
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  // State for success and failure uploads
-  // const [successUploads, setSuccessUploads] = useState<string[]>([]);
   let [getRecipeCounter, setGetRecipeCounter] = useState<number>(0);
   let [postRecipeCounter, setPostRecipeCounter] = useState<number>(0);
-  // let [sucessful,setSuccessful]=useState<string[]>([]);
   // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
+const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(18); // Adjust page size here
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
   const pageLoadingSpinner = <LoadingOutlined style={{ fontSize: 48, color: '#800080' }} spin />;
+  let uploadedFiles:number = 0;
   const checkFetchOnce = useCheckFetchOnce();
 
   useEffect(() => {
@@ -69,6 +67,9 @@ const Recipes = () => {
       handleFailedFiles();
     }
   }, [position])
+  useEffect(() => {
+    
+  },[NumberOfUploads])
   const fetchRecipes = async () => {
     !loading && setLoading(true)
     try {
@@ -97,7 +98,7 @@ const Recipes = () => {
       message.error('Failed to delete recipe');
     }
   };
-  const [fileList, setFileList] = useState<FileList[]>([]);
+  const [fileList, setFileList] = useState<string[]>([]);
 
 
   const handleExport = async () => {
@@ -257,7 +258,6 @@ const handleSubmit = (): FileList | null => {
   console.log("handleFiles");
 
   if (fileInputRef.current && fileInputRef.current.files) {
-    console.log(fileInputRef.current.files);
     handleUpload(fileInputRef.current.files, 30);
     return fileInputRef.current.files;
   }
@@ -284,10 +284,7 @@ const handleSubmit = (): FileList | null => {
 for (let i = 0; i < batch.length; i++) {
   formData.append('files', batch[i]);
 }
-// batch.forEach((file) => {
-//   formData.append('files', file);
-// })
-// formData.append('files', ...batch);
+
       setUploading(true);
       setShowPageElements(false); // Hide elements while uploading
 
@@ -309,6 +306,8 @@ for (let i = 0; i < batch.length; i++) {
         // Handle successful recipes
         if (uploadResponse.data.recipes) {
           await saveBulkRecipes(uploadResponse.data.recipes, BatchSize, successNames, duplicates);
+          uploadedFiles += batch.length;
+          setNumberOfUploads(uploadedFiles);
         }
         postRecipeCounter++;
       } catch (error) {
@@ -322,15 +321,12 @@ for (let i = 0; i < batch.length; i++) {
     for (let i = 0; i < filesArray.length; i += BatchSize) {
       const batch = filesArray.slice(i, i + BatchSize); // Get a batch of 40 files
       await processBatch(batch); // Wait for batch to process
-      // message.success(`${batch.length} files have been uploaded`);
       console.log(`Processed batch: ${Math.ceil((i + 1) / BatchSize)}`);
     }
     duplicates.length > 0 ? message.error(`${duplicates.length} files are duplicate`) : null
     successNames.length > 0 ? message.success(`${successNames.length} files are successfully uploaded`) : null
-    // successNames = [];
-    // duplicates = [];  
-    // console.log(duplicates);
     fetchRecipes();
+    setNumberOfUploads(0);
     // After all batches are processed
     setFileList([]);
   };
@@ -378,7 +374,7 @@ for (let i = 0; i < batch.length; i++) {
   return (
 
     <>
-      {!showPageElements && <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><Spin indicator={pageLoadingSpinner} />Files uploading in Progress</div>} {/* Optional loading spinner */}
+      {!showPageElements && (<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><div style={{ display: 'flex', alignItems: 'center' }}><Spin indicator={pageLoadingSpinner} /><p style={{ marginLeft: '1rem' }}>Files uploading in Progress... {NumberOfUploads} files have been uploaded</p></div></div>)} {/* Optional loading spinner */}
       {showPageElements && (
         <div style={{ padding: '2rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
