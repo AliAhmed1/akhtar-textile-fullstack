@@ -1,13 +1,13 @@
+import { prisma } from '@/lib/prisma';
+import { Decimal } from '@prisma/client/runtime/library';
 import { NextResponse } from 'next/server'
 import { Pool } from 'pg'
-const pool = new Pool({
-  connectionString: process.env.NEXT_PUBLIC_DATABASE_URL
-})
+
 
 export async function POST(request: Request) {
-  const client = await pool.connect()
   
   try {
+    // const body = await request.json();
     // Parse the request body
     const {
       name,
@@ -20,49 +20,67 @@ export async function POST(request: Request) {
       unitUsed,     
       unitConversion 
     } = await request.json()
+let newChemical: {
+  id: BigInt | null,
+  name: string | null,
+  full_name: string | null,
+  cost_per_kg: Decimal | null, 
+  kg_per_can: BigInt | null,
+  cost_per_unit: Decimal | null,
+  cost_uom: string | null,
+  type_and_use: string | null,
+  unit_used: string | null,
+  unit_conversion: Decimal | null,
+} = {
+  id: null,
+  name: '',
+  full_name: null,
+  cost_per_kg: null,
+  kg_per_can: null,
+  cost_per_unit: null,
+  cost_uom: null,
+  type_and_use: null,
+  unit_used: null,
+  unit_conversion: null
+}
 
-     const existingChemicalResult = await client.query(
-      'SELECT * FROM chemicals WHERE name = $1',[name]
-    );
-   
-    if (existingChemicalResult.rows.length > 0) {
+    await prisma.$transaction(async (prisma) => {
+
+      
+     const existingChemicalResult = await prisma.chemicals.findUnique({where:{name:name}});
+console.log('existingChemicalResult',existingChemicalResult);
+    if (existingChemicalResult) {
       return NextResponse.json({ message: 'Chemical already exists' }, { status: 400 })
     }
 
-    // Create the new chemical
-    const insertQuery = `
-    INSERT INTO chemicals (
-      name, full_name, cost_per_kg, kg_per_can, cost_per_unit, cost_uom, type_and_use, unit_used, unit_conversion
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9)
-    RETURNING id, name, full_name, cost_per_kg, kg_per_can, cost_per_unit, cost_uom, type_and_use, unit_used, unit_conversion
-  `
-  
-    const values = [
-      name,    
-      full_name,
-      costPerKg,   
-      kgPerCan,     
-      costPerUnit,  
-      costUom,      
-      typeAndUse,   
-      unitUsed,     
-      unitConversion 
-    ]
-
-    const newChemnicalResult = await client.query(insertQuery, values)
-    const newChemical = newChemnicalResult.rows[0]
-
+    const values = {
+      name:name,    
+      full_name:full_name,
+      cost_per_kg:parseFloat(costPerKg),   
+      kg_per_can:BigInt(kgPerCan),     
+      cost_per_unit:parseFloat(costPerUnit),  
+      cost_uom:costUom,      
+      type_and_use:typeAndUse,   
+      unit_used:unitUsed,     
+      unit_conversion:parseFloat(unitConversion)
+    }
+    console.log('existingChemicalResult',existingChemicalResult);
+    const newChemnicalResult = await prisma.chemicals.create({
+      data: values
+    })
+    newChemical = newChemnicalResult
+  });
     return NextResponse.json({
-      id: newChemical.id,
+      id: newChemical.id?.toString(),
       name: newChemical.name,  
       full_name: newChemical.full_name,   
-      costPerKg: newChemical.costPerKg,    
-      kgPerCan: newChemical.kgPerCan,      
-      costPerUnit: newChemical.costPerUnit, 
-      costUom: newChemical.costUom,        
-      typeAndUse: newChemical.typeAndUse,  
-      unitUsed: newChemical.unitUsed,      
-      unitConversion: newChemical.unitConversion 
+      costPerKg: newChemical.cost_per_kg,    
+      kgPerCan: newChemical.kg_per_can,      
+      costPerUnit: newChemical.cost_per_unit, 
+      costUom: newChemical.cost_uom,        
+      typeAndUse: newChemical.type_and_use,  
+      unitUsed: newChemical.unit_used,      
+      unitConversion: newChemical.unit_conversion 
     }, { status: 201 });
     
 
@@ -70,6 +88,6 @@ export async function POST(request: Request) {
     console.error('Error creating chemical:', error)
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 })
   } finally {
-    client.release() 
+    await prisma.$disconnect(); 
   }
 }

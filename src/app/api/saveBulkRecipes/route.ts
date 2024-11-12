@@ -287,11 +287,3 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
 
     }
   };
-
-//   } catch (error) {
-//     console.error('Error saving recipe data:', error);
-//     return NextResponse.json({ success: false, message: failed }, { status: 500 });
-//   } finally {
-//     await client.end(); // Close the client connection
-//   }
-// }

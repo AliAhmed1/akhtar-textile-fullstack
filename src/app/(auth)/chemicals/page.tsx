@@ -1,8 +1,6 @@
 import Chemicals from "@/components/Chemicals/Chemicals";
 import { UseCurrentUrlServerSide } from "@/utils/useCurrentUrlServerSide";
 
-/*************  ✨ Codeium Command ⭐  *************/
-/******  369046e6-ea5b-4e9a-8bb8-20213a08e1c9  *******/
 const chemicals: React.FC = async () => {
 const url = UseCurrentUrlServerSide();
 
