@@ -26,9 +26,9 @@ const ChemicalForm: React.FC<ChemicalFormProps> = ({ setIsModalVisible,onSuccess
         },
         body: JSON.stringify(values),
       });
-
+console.log('response',response);
       if (response.ok) {
-        message.success('Chemical created successfully.');
+        message.success('Cheical created successfully.');
         form.resetFields(); 
 
         onSuccess(); 
@@ -49,6 +49,9 @@ const ChemicalForm: React.FC<ChemicalFormProps> = ({ setIsModalVisible,onSuccess
 
   return (
     <Form form={form} layout="vertical" onFinish={onFinish} >
+      <Form.Item name="id" hidden>
+        <Input />
+      </Form.Item>
       {/* Your form fields here */}
       <Row gutter={16}>
       <Col xs={24} md={8}>

@@ -217,6 +217,7 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
   const HandleEdit = (chemical: Chemical) => {
     console.log("chemical",chemical)
     form.setFieldsValue({
+      id: chemical.id,
          name: chemical.name,
       full_name: chemical.full_name,
       costPerKg: chemical.cost_per_kg,

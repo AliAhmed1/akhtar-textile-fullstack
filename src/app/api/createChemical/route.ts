@@ -10,6 +10,7 @@ export async function POST(request: Request) {
     // const body = await request.json();
     // Parse the request body
     const {
+      id,
       name,
       full_name,    
       costPerKg,   
@@ -47,7 +48,7 @@ let newChemical: {
     // await prisma.$transaction(async (prisma) => {
 
       
-     const existingChemicalResult = await prisma.chemicals.findUnique({where:{name:name}});
+     const existingChemicalResult = await prisma.chemicals.findUnique({where:{id:BigInt(id)}});
 console.log('existingChemicalResult',existingChemicalResult);
     if (existingChemicalResult) {
       await prisma.chemicals.update({
@@ -64,7 +65,7 @@ console.log('existingChemicalResult',existingChemicalResult);
           unit_conversion: parseFloat(unitConversion)
         }
       })
-      return NextResponse.json({ message: 'chemical updated successfully' }, { status: 200 })
+      return NextResponse.json({success: true, message: 'chemical updated successfully' }, { status: 200 })
     }
 
     const values = {
@@ -86,16 +87,8 @@ console.log('existingChemicalResult',existingChemicalResult);
   // });
   console.log('newChemical',newChemical);
     return NextResponse.json({
-      id: newChemical.id?.toString(),
-      name: newChemical.name,  
-      full_name: newChemical.full_name,   
-      costPerKg: newChemical.cost_per_kg,    
-      kgPerCan: newChemical.kg_per_can?.toString(),      
-      costPerUnit: newChemical.cost_per_unit, 
-      costUom: newChemical.cost_uom,        
-      typeAndUse: newChemical.type_and_use,  
-      unitUsed: newChemical.unit_used,      
-      unitConversion: newChemical.unit_conversion 
+      success: true,
+      message:'chemical created successfully'
     }, { status: 201 });
     
 
