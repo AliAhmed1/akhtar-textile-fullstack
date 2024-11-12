@@ -161,7 +161,7 @@
 // export default Chemicals;
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input, Spin, Pagination } from 'antd';
+import { Modal, Button, Input, Spin, Pagination, Form } from 'antd';
 import ChemicalForm from '@/components/ChemicalForm/ChemicalForm';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
@@ -191,8 +191,9 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const router = useRouter();
+  // const [form, setForm] = useState<any>();
   const pageLoadingSpinner = <LoadingOutlined style={{ fontSize: 48, color: '#800080' }} spin />;
-
+  const [form] = Form.useForm();
   const keys = ["name"];
   
   // Search function
@@ -212,6 +213,34 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
   const showModal = () => {
     setIsModalVisible(true);
   };
+
+  const HandleEdit = (chemical: Chemical) => {
+    console.log("chemical",chemical)
+    form.setFieldsValue({
+         name: chemical.name,
+      full_name: chemical.full_name,
+      costPerKg: chemical.cost_per_kg,
+      kgPerCan: chemical.kg_per_can,
+      costPerUnit: chemical.cost_per_unit,
+      costUom: chemical.cost_uom,
+      typeAndUse: chemical.type_and_use,
+      unitUsed: chemical.unit_used,
+      unitConversion: chemical.unit_conversion
+    });
+    // setForm({
+    //   name: chemical.name,
+    //   full_name: chemical.full_name,
+    //   costPerKg: chemical.cost_per_kg,
+    //   kgPerCan: chemical.kg_per_can,
+    //   costPerUnit: chemical.cost_per_unit,
+    //   costUom: chemical.cost_uom,
+    //   typeAndUse: chemical.type_and_use,
+    //   unitUsed: chemical.unit_used,
+    //   unitConversion: chemical.unit_conversion
+    // });
+    console.log("form",form)
+    showModal();
+  }
 
   const handleCancel = () => {
     setIsModalVisible(false);
@@ -271,7 +300,7 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {chemicals.map((chemical: Chemical, index: number) => (
-              <tr key={chemical.id || index} className="hover:bg-purple-50 transition duration-200">
+              <tr key={chemical.id || index} className="hover:bg-purple-50 transition duration-200" onClick={() => HandleEdit(chemical)}>
                 <td className="px-6 py-4"><span className='text-[#797FE7]'>{chemical.name}</span></td>
                 <td className="px-3 py-4"><span className='text-[#797FE7]'>{chemical.full_name}</span></td>
                 <td className="px-3 py-4 text-center"><span className='text-[#797FE7]'>{chemical.cost_per_kg}</span></td>
@@ -312,7 +341,7 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
       >
         <h1 className="text-xl font-bold mb-4">Chemical Form</h1>
         <hr className="mb-2" />
-        <ChemicalForm onSuccess={handleFormSuccess} setIsModalVisible={setIsModalVisible} />
+        <ChemicalForm onSuccess={handleFormSuccess} setIsModalVisible={setIsModalVisible} form={form}/>
       </Modal>
     </div>
   );

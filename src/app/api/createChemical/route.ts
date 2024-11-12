@@ -44,13 +44,27 @@ let newChemical: {
   unit_conversion: null
 }
 
-    await prisma.$transaction(async (prisma) => {
+    // await prisma.$transaction(async (prisma) => {
 
       
      const existingChemicalResult = await prisma.chemicals.findUnique({where:{name:name}});
 console.log('existingChemicalResult',existingChemicalResult);
     if (existingChemicalResult) {
-      return NextResponse.json({ message: 'Chemical already exists' }, { status: 400 })
+      await prisma.chemicals.update({
+        where: { id: existingChemicalResult.id },
+        data: {
+          name: name,
+          full_name: full_name,
+          cost_per_kg: parseFloat(costPerKg),
+          kg_per_can: BigInt(kgPerCan),
+          cost_per_unit: parseFloat(costPerUnit),
+          cost_uom: costUom,
+          type_and_use: typeAndUse,
+          unit_used: unitUsed,
+          unit_conversion: parseFloat(unitConversion)
+        }
+      })
+      return NextResponse.json({ message: 'chemical updated successfully' }, { status: 200 })
     }
 
     const values = {
@@ -69,13 +83,14 @@ console.log('existingChemicalResult',existingChemicalResult);
       data: values
     })
     newChemical = newChemnicalResult
-  });
+  // });
+  console.log('newChemical',newChemical);
     return NextResponse.json({
       id: newChemical.id?.toString(),
       name: newChemical.name,  
       full_name: newChemical.full_name,   
       costPerKg: newChemical.cost_per_kg,    
-      kgPerCan: newChemical.kg_per_can,      
+      kgPerCan: newChemical.kg_per_can?.toString(),      
       costPerUnit: newChemical.cost_per_unit, 
       costUom: newChemical.cost_uom,        
       typeAndUse: newChemical.type_and_use,  
