@@ -233,26 +233,6 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
       console.error('Error uploading or saving files:', error);
     }
   }
-// let files: any[] = [];
-// let count = 0;
-//   const handleFile: UploadProps['onChange'] = useCallback(
-//     debounce((info) => {
-//       const { fileList: currentFileList } = info;
-// // console.log(currentFileList)
-//       // Only update fileList when necessary
-//       file([...currentFileList]);
-
-//       // Check if any file is uploading and update isLoading state
-//       setIsLoading(currentFileList.some((file:any) => file.status === 'uploading'));
-//     }, 300),
-//     []
-//   );
-
-// const handleFile: UploadProps['onChange'] = ({ fileList }) => {
-//   count++
-//   console.log(count)
-//   console.log(fileList)
-// }
 
 const handleSubmit = (): FileList | null => {
   console.log("handleFiles");

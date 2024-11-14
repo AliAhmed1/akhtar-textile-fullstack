@@ -24,7 +24,7 @@ const ChemicalForm: React.FC<ChemicalFormProps> = ({ setIsModalVisible,onSuccess
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify([[values]]),
       });
 console.log('response',response);
       if (response.ok) {

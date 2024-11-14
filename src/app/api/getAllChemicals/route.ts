@@ -55,7 +55,7 @@ export async function GET() {
     // const result = await client.query(query);
 
     const result = await prisma.chemicals.findMany()
-    console.log(result);
+    // console.log(result);
     const resultSerialized = result.map((chemical) => ({
       ...chemical,
       id: chemical.id.toString(),

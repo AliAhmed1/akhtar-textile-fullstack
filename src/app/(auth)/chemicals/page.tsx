@@ -15,7 +15,7 @@ const url = UseCurrentUrlServerSide();
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      console.log("data",data)
+      // console.log("data",data)
       return data.chemicals;
     } catch (error) {
       console.error('Failed to fetch chemicals:', error);
