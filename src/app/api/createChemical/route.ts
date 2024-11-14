@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server'
 export async function POST(request: Request) {
   
   try {
-    const requestBody = [await request.json()]
+    const requestBody = await request.json()
     console.log('requestBody',requestBody);
 
 let newChemical: {
@@ -74,7 +74,6 @@ console.log('existingChemicalResult',existingChemicalResult);
 
 }
     return NextResponse.json({
-      success: true,
       message:'chemical created successfully'
     }, { status: 201 });
     

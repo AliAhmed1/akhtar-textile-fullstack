@@ -80,7 +80,7 @@ console.log('response',response);
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Cost/UOM" name="costUom" >
+    <Form.Item label="Cost/UOM" name="costUom" initialValue={''}>
       <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
@@ -89,12 +89,12 @@ console.log('response',response);
 <Row gutter={16}>
  
   <Col xs={24} md={8}>
-    <Form.Item label="Type & Use" name="typeAndUse">
+    <Form.Item label="Type & Use" name="typeAndUse" initialValue={''}>
     <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Unit Used" name="unitUsed">
+    <Form.Item label="Unit Used" name="unitUsed" initialValue={''}>
       <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>

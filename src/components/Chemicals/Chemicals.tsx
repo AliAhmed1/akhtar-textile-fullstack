@@ -1,12 +1,13 @@
 
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input, Spin, Pagination, Form } from 'antd';
+import { Modal, Button, Input, Spin, Pagination, Form, message } from 'antd';
 import ChemicalForm from '@/components/ChemicalForm/ChemicalForm';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { set } from 'lodash';
+import { on } from 'events';
 
 interface Chemical {
   id: string | null | undefined;
@@ -99,10 +100,11 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
       const response = await axios.post('http://127.0.0.1:8001/upload-chemicals', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      console.log("response",response.data.chemicals);
-      setIsModalVisible(false);
-      const chemicalsUploaded = await axios.post('/api/createChemical', response.data.chemicals, { headers: { 'Content-Type': 'application/json' }})
-      console.log("chemicalsUploaded",chemicalsUploaded);
+
+      const chemicalsUploaded = await axios.post('/api/createChemical', [response.data.chemicals], { headers: { 'Content-Type': 'application/json' }})
+
+      message.success('Chemicals added successfully');
+      handleFormSuccess();
     } catch(err) {
       console.error('Error uploading files');
     }
