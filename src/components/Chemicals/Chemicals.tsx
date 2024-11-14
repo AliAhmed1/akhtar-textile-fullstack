@@ -1,6 +1,6 @@
 
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use, useRef } from 'react';
 import { Modal, Button, Input, Spin, Pagination, Form, message } from 'antd';
 import ChemicalForm from '@/components/ChemicalForm/ChemicalForm';
 import { DownloadOutlined, LoadingOutlined } from '@ant-design/icons';
@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { set } from 'lodash';
 import { on } from 'events';
+import { fi } from 'date-fns/locale';
 
 interface Chemical {
   id: string | null | undefined;
@@ -42,6 +43,7 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
   const [modalWidth, setModalWidth] = useState<number>();
   const [notUploaded, setNotUploaded] = useState(true);
   const [fileList, setFileList] = useState<any[]>([]);
+  const fileInput = useRef<HTMLInputElement>(null);
   // Search function
   const search = (data: Chemical[]) => {
     return data.filter((item) =>
@@ -89,6 +91,7 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
   }
 
   const handleImport = async () => {
+
     console.log("fileList",fileList);
     const formData = new FormData();
     for(const file of fileList) {
@@ -100,13 +103,19 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
       const response = await axios.post('http://127.0.0.1:8001/upload-chemicals', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
+console.log(response.data.error);
+if(response.data.status === "200") {
+  
+}
       const chemicalsUploaded = await axios.post('/api/createChemical', [response.data.chemicals], { headers: { 'Content-Type': 'application/json' }})
 
       message.success('Chemicals added successfully');
       handleFormSuccess();
     } catch(err) {
-      console.error('Error uploading files');
+      message.error('Error uploading files');
+    } finally {
+      setIsModalVisible(false);
+      fileInput.current?.files?.length ? fileInput.current.value = "": null;
     }
 
   }
@@ -224,7 +233,7 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
         <h1 className="text-xl font-bold mb-4">Import Chemicals</h1>
         <hr className="mb-2" />
         <Button type='primary' disabled={notUploaded} onClick={handleImport}>Import Chemicals</Button>
-        <Input style={{ width: '26rem', border: 'none', marginLeft: '0.5rem' }} type="file" name="file" onChange={(e) => handleFileUplaod(e.target.files) } multiple/>
+        <input style={{ width: '26rem', border: 'none', marginLeft: '0.5rem' }} type="file" name="file" ref={fileInput} onChange={(e) => handleFileUplaod(e.target.files) } multiple/>
         </>
       )}
       </Modal>
