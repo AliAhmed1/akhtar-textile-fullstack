@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+folder Name should be: 
+Akhtar_Textile_Automation
+akhtar-textile-fullstack
+
 ## Getting Started
 
 First, run the development server:

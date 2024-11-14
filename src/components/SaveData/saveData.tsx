@@ -11,7 +11,9 @@ interface SaveDataProps {
 
 const SaveData: React.FC<SaveDataProps> = ({ form, tableData, recipe1 }) => {
   const saveRecipe = async () => {
+
     try {
+
       const values = form.getFieldsValue();
       const recipeData = {
         fileName: recipe1.file_name,

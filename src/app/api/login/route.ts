@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import { Pool } from 'pg';
 import { serialize } from 'cookie';
-
-// Initialize the PostgreSQL connection pool
-const pool = new Pool({
-  connectionString: process.env.NEXT_PUBLIC_DATABASE_URL
-});
+import { prisma } from '@/lib/prisma';
 
 // Secret key for JWT
 const JWT_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET || "";
 
 export async function POST(request: NextRequest) {
-  const client = await pool.connect();
   try {
     // Extract username and password from the request body
     const body = await request.json();
@@ -23,10 +17,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "Username and password are required" }, { status: 400 });
     }
 
-    // Find the user in the database
-    const result = await client.query('SELECT * FROM users WHERE username = $1', [username]);
-    const user = result.rows[0];
-
+    const user = await prisma.users.findFirst({
+      where: {
+username: username
+      },
+    });
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
@@ -41,7 +36,7 @@ export async function POST(request: NextRequest) {
     // Generate a JWT token
     const token = jwt.sign(
       {
-        id: user.id,
+        id: user.id.toString(),
         name: user.name,
         username: user.username,
       },
@@ -51,7 +46,6 @@ export async function POST(request: NextRequest) {
 
     // Serialize the cookie
     const cookie = serialize('token', token, {
-      httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60, // 1 hour
       path: '/',
@@ -60,13 +54,12 @@ export async function POST(request: NextRequest) {
     // Respond with the token and set the cookie
     const response = NextResponse.json({ token: token, message: "Logged in successfully" });
     response.headers.set('Set-Cookie', cookie); // Set the cookie header here
-
     return response;
 
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: "Something went wrong" }, { status: 500 });
   } finally {
-    client.release();
+    await prisma.$disconnect();
   }
 }

@@ -212,46 +212,23 @@
 
 export const dynamic = 'force-dynamic';
 
-import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { NextRequest, NextResponse } from 'next/server';
 import ExcelJS from 'exceljs';
 
-const pool = new Pool({
-  connectionString: process.env.NEXT_PUBLIC_DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
-});
 
-export async function GET(request:any) {
+
+export async function POST(request:NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const startDate = searchParams.get('start_date');
-    const endDate = searchParams.get('end_date');
-    console.log(startDate)
-    console.log(endDate)
-    const client = await pool.connect();
-
-    if (!startDate || !endDate) {
-      return new NextResponse('Start date and end date are required', { status: 400 });
-    }    
-    const recipesResult = await client.query(
-      `SELECT * FROM recipes 
-       WHERE created_at >= $1 AND created_at < $2`, 
-       [startDate, new Date(new Date(endDate).setHours(23, 59, 59)).toISOString()]
-    );
-    
-    const stepsResult = await client.query('SELECT * FROM steps');
-    const chemicalsResult = await client.query('SELECT * FROM chemicals');
-    const chemicalsAssocResult = await client.query('SELECT * FROM chemical_association');
-    
-    client.release();
-
+    const {data} = await request.json();
+    console.log(data.recipesResult);
+    const { recipesResult, stepsResult, chemicalsResult, chemicalsAssocResult } = data;
+    // console.log('recipes',recipesResult,'steps',stepsResult,'chemicals',chemicalsResult,'chemicalsAssociation',chemicalsAssocResult);
+    // console.log(request.json());
     const recipes = recipesResult.rows;
     const steps = stepsResult.rows;
     const chemicals = chemicalsResult.rows;
     const chemicalsAssociation = chemicalsAssocResult.rows;
-
+// console.log(recipes);
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Recipes');
 
@@ -262,22 +239,47 @@ export async function GET(request:any) {
       { header: 'Wash', key: 'wash' },
       { header: 'Active Flag', key: 'active_flag' },
       { header: 'Load Size', key: 'load_size' },
+      { header: 'Step', key: 'step_no' },
+      { header: 'Modified Action', key: 'modified_action' },
+      { header: 'Modified Timing', key: 'modified_timing' },
       { header: 'Action', key: 'action' },
-      { header: 'Liters', key: 'liters' },
+      { header: 'MINS', key: 'minutes' },
+      { header: 'LTRs', key: 'liters' },
       { header: 'RPM', key: 'rpm' },
-      { header: 'Centigrade', key: 'centigrade' },
-      { header: 'PH', key: 'ph' },
-      { header: 'TDS', key: 'tds' },
-      { header: 'TSS', key: 'tss' },
-      { header: 'Minutes', key: 'minutes' },
-      { header: 'Step No', key: 'step_no' },
       { header: 'Chemical Name', key: 'chemical_name' },
       { header: 'Dosage %', key: 'dosage_percent' },
       { header: 'Dosage', key: 'dosage' },
+      { header: 'Centigrade', key: 'centigrade' },
+      { header: 'PH', key: 'ph' },
+      { header: 'LR', key: 'lr' },
+      { header: 'TDS', key: 'tds' },
+      { header: 'TSS', key: 'tss' },
+      { header: 'Pieces', key: 'pieces' },
       { header: 'Total Weight', key: 'total_weight' },
+      { header: 'Lots', key: 'lots' },
+      { header: 'Chem Need', key: 'chem_need' },
+      { header: 'Chemical Cost', key: 'chemical_cost' },
+      { header: 'Water Cost', key: 'water_cost' },
+      { header: 'Heat Cost', key: 'heat_cost' },
+      { header: 'Sort', key: 'sort' },
       { header: 'Concatenate', key: 'concatenate' },
     ];
 
+    const bgcolourCondition = (recipeIndex: number,cell:any) => {
+      if(recipeIndex % 2 === 1 ) {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'ffffff' }, bgColor: { argb: 'ffffff'} } 
+        cell.border = { bottom: { style: 'thin', color: { argb: 'ffffff' } } ,
+         top: { style: 'thin', color: { argb: 'ffffff' } } ,
+         left: { style: 'thin', color: { argb: 'ffffff' } }, 
+         right: { style: 'thin', color: { argb: 'ffffff' } }};
+       } else {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'd7d7d7' }, bgColor: { argb: 'd7d7d7'} }
+        cell.border = { bottom: { style: 'thin', color: { argb: 'd7d7d7' } } ,
+        top: { style: 'thin', color: { argb: 'd7d7d7' } } ,
+        left: { style: 'thin', color: { argb: 'd7d7d7' } }, 
+        right: { style: 'thin', color: { argb: 'd7d7d7' } }};
+       }
+    }
     const headerRow = worksheet.getRow(1);
     headerRow.font = { bold: true };
     headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -286,36 +288,40 @@ export async function GET(request:any) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '7030a0' } };
       } else if (colNumber <= 13) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'ffff00' } };
-      } else if (colNumber <= 17) {
+      } else if (colNumber <= 21) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'e26b0a' } };
-      } else {
+      } else if (colNumber <= 25){
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '7030a0' } };
+      } else if (colNumber <= 28) {
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4f81bd' } };
+      } else {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '00b050' } };
       }
     });
 
     const rowSet = new Set();
-
-    recipes.forEach((recipe, recipeIndex) => {
-      const recipeSteps = steps.filter(step => step.recipesid === recipe.id);
+    // const darkbg = 'd7d7d7', lightbg = 'ffffff';
+    recipes.forEach((recipe:any, recipeIndex:any) => {
+      const recipeSteps = steps.filter((step:any) => step.recipesid === recipe.id);
       let firstStepRow = worksheet.lastRow ? worksheet.lastRow.number + 1 : 1;
-
-      recipeSteps.forEach((step, stepIndex) => {
+      let rowObject = {}
+      recipeSteps.forEach((step:any, stepIndex:any) => {
         const stepChemicals = chemicalsAssociation
-          .filter(assoc => assoc.stepid === step.id)
-          .map(assoc => {
-            const chemical = chemicals.find(c => c.id === assoc.chemicalid);
+          .filter((assoc:any) => assoc.stepid === step.id)
+          .map((assoc:any) => {
+            const chemical = chemicals.find((c:any) => c.id === assoc.chemicalid);
             return {
               chemical_name: chemical ? chemical.name : 'Unknown',
               dosage_percent: assoc.percentage !== null ? assoc.percentage : 'Unknown',
               dosage: assoc.dosage !== null ? assoc.dosage : 'Unknown',
             };
           });
-
-        stepChemicals.forEach((chemical, chemicalIndex) => {
+        stepChemicals.forEach((chemical:any, chemicalIndex:any) => {
           const rowKey = `${recipeIndex}-${stepIndex}-${chemicalIndex}-${recipe.recipe || recipe.id}-${step.step_no}-${chemical.chemical_name}`;
 
           if (!rowSet.has(rowKey)) {
-            worksheet.addRow({
+
+            const cell = worksheet.addRow({
               recipe_number: recipe.recipe,
               fno: recipe.fno,
               fabric: recipe.fabric,
@@ -327,22 +333,28 @@ export async function GET(request:any) {
               rpm: step.rpm,
               centigrade: step.centigrade,
               ph: step.ph,
+              lr: step.lr,
               tds: step.tds,
               tss: step.tss,
               minutes: step.minutes,
               step_no: step.step_no,
               chemical_name: chemical.chemical_name,
-              dosage_percent: chemical.dosage_percent,
               dosage: chemical.dosage,
+              
             });
-            rowSet.add(rowKey);
+            const dosage_percent = cell.getCell(15).address
+            const dosage = cell.getCell(16).address
+            worksheet.getCell(`${dosage_percent}`).value = { formula: `${dosage}/140000*100` };
+             rowSet.add(rowKey);
+             bgcolourCondition(recipeIndex,cell);
           }
+          
         });
 
         if (stepChemicals.length === 0) {
           const rowKey = `${recipeIndex}-${stepIndex}-${recipe.recipe || recipe.id}-${step.step_no}`;
           if (!rowSet.has(rowKey)) {
-            worksheet.addRow({
+            const cell = worksheet.addRow({
               recipe_number: recipe.recipe,
               fno: recipe.fno,
               fabric: recipe.fabric,
@@ -354,24 +366,27 @@ export async function GET(request:any) {
               rpm: step.rpm,
               centigrade: step.centigrade,
               ph: step.ph,
+              lr: step.lr,
               tds: step.tds,
               tss: step.tss,
               minutes: step.minutes,
               step_no: step.step_no,
             });
-            rowSet.add(rowKey);
+            
+             rowSet.add(rowKey);
+            bgcolourCondition(recipeIndex,cell);
           }
         }
       });
 
       const lastRow = worksheet.lastRow;
       if (lastRow) {
-        for (let col = 1; col <= 20; col++) { 
+        for (let col = 1; col <= worksheet.columns.length; col++) { 
           const cell = lastRow.getCell(col);
           cell.border = { bottom: { style: 'thick', color: { argb: '000000' } } }; 
         }
 
-        const sectionEndColumns = [6, 13, 17, 20]; 
+        const sectionEndColumns = [6, 13, 21, 25,28]; 
 
         sectionEndColumns.forEach(colNum => {
           for (let rowNum = firstStepRow; rowNum <= lastRow.number; rowNum++) {
@@ -396,7 +411,6 @@ export async function GET(request:any) {
         column.alignment = { horizontal: 'center', vertical: 'middle' };
       }
     });
-
     const buffer = await workbook.xlsx.writeBuffer();
 
     return new NextResponse(buffer, {
