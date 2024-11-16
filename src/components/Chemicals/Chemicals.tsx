@@ -9,6 +9,7 @@ import axios from 'axios';
 import { set } from 'lodash';
 import { on } from 'events';
 import { fi } from 'date-fns/locale';
+import SetupUtilityPanel from '../SetupUtilityPanel/SetupUtilityPanel';
 
 interface Chemical {
   id: string | null | undefined;
@@ -63,7 +64,6 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
     flag=== 2 && setModalWidth(660)
     setModalFlag(flag);
     setIsModalVisible(true);
-  
   };
 
   const HandleEdit = (chemical: Chemical) => {
@@ -129,6 +129,11 @@ if(response.data.status === "200") {
     setIsModalVisible(false);
   };
 
+  const handleSearchChange = (value: string) => {
+    setQuery(value);
+
+  }
+
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
@@ -144,11 +149,13 @@ if(response.data.status === "200") {
       <div className="flex items-center justify-between">
         <h5 className="mt-0 mb-2 text-gray-800 font-medium text-lg">Chemicals</h5>
         <div className="flex items-center space-x-4">
-          <Input
-            placeholder="Search Chemicals"
-            onChange={(e) => setQuery(e.target.value)}
-            className="border border-gray-300 rounded-sm px-3 py-2 text-gray-800 text-sm transition-all duration-300 hover:border-blue-500 hover:border-r rounded-2xl"
+          <SetupUtilityPanel
+          placeholder='Search Chemicals'
+          setQuery={handleSearchChange}
+          showModal={()=> showModal(1)}
+          buttonText="Create"
           />
+
           <Button 
            icon={<DownloadOutlined />}
            onClick={() => showModal(2)}
@@ -156,15 +163,6 @@ if(response.data.status === "200") {
            >
             Import
             </Button>
-
-          <Button
-            type="primary"
-            onClick={() => showModal(1)}
-            style={{ backgroundColor: '#797FE7' }}
-            className="px-4 py-2"
-          >
-            Create
-          </Button>
         </div>
       </div>
 

@@ -38,7 +38,7 @@ const UtilityPanel: React.FC<UtilityPanelProps> = ({
         </div>
       </Radio.Group>
 <div className='w-[10rem]'>
-      <Input
+      <Input 
         placeholder="Search by"
         prefix={<SearchOutlined />}
         value={searchTerm}

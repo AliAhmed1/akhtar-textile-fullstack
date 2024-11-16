@@ -6,6 +6,7 @@ import EmployeeForm from '@/components/EmployeeForm/EmployeeForm';
 import { LoadingOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form'; // Import FormInstance
 import { useRouter } from 'next/navigation';
+import SetupUtilityPanel from '../SetupUtilityPanel/SetupUtilityPanel';
 
 interface User {
   id: string;                       // Unique identifier
@@ -81,19 +82,12 @@ console.log("userData",userData)
       <div className="flex items-center justify-between">
         <h5 className="mt-0 mb-2 text-gray-800 font-medium text-lg">Employees</h5>
         <div className="flex items-center space-x-4">
-          <Input
-            placeholder="Search Name"
-            onChange={e => setQuery(e.target.value)}
-            className="border border-gray-300 rounded-sm px-3 py-2 text-gray-800 text-sm transition-all duration-300 hover:border-blue-500 hover:border-r rounded-2xl"
+        <SetupUtilityPanel
+          placeholder='Search Names'
+          setQuery={setQuery}
+          showModal={showModal}
+          buttonText="Create"
           />
-          <Button
-            type="primary"
-            onClick={showModal}
-            style={{ backgroundColor: '#797FE7', borderRadius: '100px' }}
-            className="px-4 py-2"
-          >
-            Create
-          </Button>
         </div>
       </div>
 
