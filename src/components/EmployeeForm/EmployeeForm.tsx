@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Select, Row, Col, Button, message } from 'antd';
-import * as yup from 'yup';
+
 const { Option } = Select;
 
 interface EmployeeFormProps {
@@ -14,21 +14,23 @@ interface EmployeeFormProps {
 
 }
 
-const validationSchema = yup.object().shape({
-  name: yup.string().required('Name is required'),
-  username: yup.string().required('Username is required'),
-  password: yup.string().required('Password is required'),
-  code: yup.string().required('Employee Code is required'),
-  phone: yup
-  .string()
-  .length(11, 'Phone # must be exactly 11 digits')
-  .matches(/^\d{11}$/, 'Phone # must be exactly 11 digits'),
-  cnic: yup
-  .string()
-  .length(13, 'CNIC must be exactly 13 digits')
-  .matches(/^\d{13}$/, 'CNIC must be a 13-digit number') // Ensures it only contains digits
+// const validationSchema = yup.object().shape({
+//   name: yup.string().required('Name is required'),
+//   username: yup.string().required('Username is required'),
+//   password: yup.string().required('Password is required'),
+//   code: yup.string().required('Employee Code is required'),
+//   phone: yup
+//   .string()
+//   .length(11, 'Phone # must be exactly 11 digits')
+//   .matches(/^\d{11}$/, 'Phone # must be exactly 11 digits'),
+//   cnic: yup
+//   .string()
+//   .length(13, 'CNIC must be exactly 13 digits')
+//   .matches(/^\d{13}$/, 'CNIC must be a 13-digit number'),
+//   accesslevels: yup.array().length(1, 'Please select at least one access level').required('Access levels are required'),
+//    // Ensures it only contains digits
 
-});
+// });
 
 const EmployeeForm: React.FC<EmployeeFormProps> = ({ setIsModalVisible,onSuccess,setFormRef,setIsAdminSelected, isAdminSelected  }) => {
   const [form] = Form.useForm();
@@ -45,7 +47,7 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ setIsModalVisible,onSuccess
   const onFinish = async (values: any) => {
     setLoading(true); // Start loading
     try {
-      await validationSchema.validate(values, { abortEarly: false });
+      // await validationSchema.validate(values, { abortEarly: false });
 
       const response = await fetch('/api/createUser', {
         method: 'POST',
@@ -85,11 +87,17 @@ const EmployeeForm: React.FC<EmployeeFormProps> = ({ setIsModalVisible,onSuccess
       setLoading(false); // Stop loading
     }
   };
-  const handleInputChange = (name: string) => {
-    // Clear validation errors for the input field
-    form.setFields([{ name, errors: [] }]);
-  };
-
+  // const handleInputChange = (name: string) => {
+  //   // Clear validation errors for the input field
+  //   form.setFields([{ name, errors: [] }]);
+  // };
+const validateAccessLevels = (rule: any, value: string) => {
+  console.log("value",value, 'rule',rule)
+  if(value && value.length >= 1){
+    return Promise.resolve();
+  }
+  return Promise.reject('Please select at least one access level');
+}
   const handleAccessLevelChange = (value: string[]) => {
 console.log("value",value)
 
@@ -112,25 +120,26 @@ console.log("value",value)
       {/* Your form fields here */}
       <Row gutter={16}>
           <Col xs={24} md={8}>
-            <Form.Item label="Name*" name="name">
+            <Form.Item label="Name" name="name" rules={[{ required: true, message: 'Name is required' }]}>
               <Input style={{ width: '100%' }} 
-               onChange={() => handleInputChange('name')}
+              //  onChange={() => handleInputChange('name')}
               />
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
             <Form.Item label="Department" name="department">
               <Select placeholder="Select Department" style={{ width: '100%' }}>
+                <Option defaultValue=""> </Option>
                 <Option value="Accounts">Accounts</Option>
                 <Option value="Operations">Operations</Option>
               </Select>
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
-            <Form.Item label="User Name*" name="username">
+            <Form.Item label="User Name" name="username" rules={[{ required: true, message: 'Username is required' }]}>
               <Input style={{ width: '100%' }} 
          
-                onChange={() => handleInputChange('username')}
+                // onChange={() => handleInputChange('username')}
               />
             </Form.Item>
           </Col>
@@ -138,10 +147,14 @@ console.log("value",value)
 
         <Row gutter={16}>
           <Col xs={24} md={8}>
-            <Form.Item label="CNIC" name="cnic">
+            <Form.Item label="CNIC" name="cnic"  rules={[
+      { required: true, message: 'CNIC is required' },
+      { len: 13, message: 'CNIC must be exactly 13 digits' },
+      { pattern: /^\d{13}$/, message: 'CNIC must be a 13-digit number' },
+    ]}>
               <Input style={{ width: '100%' }} 
               maxLength={13} 
-              onChange={(e) => handleValidationClear('cnic', 13, e.target.value)}
+              // onChange={(e) => handleValidationClear('cnic', 13, e.target.value)}
 
               />
             </Form.Item>
@@ -149,16 +162,22 @@ console.log("value",value)
           <Col xs={24} md={8}>
             <Form.Item label="Designation" name="designation">
               <Select placeholder="Select Designation" style={{ width: '100%' }}>
+                <Option defaultValue=""> </Option>
                 <Option value="Manager">Manager</Option>
                 <Option value="Admin">Admin</Option>
               </Select>
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
-            <Form.Item label="Password*" name="password">
+            <Form.Item label="Password" name="password" rules={[
+              { required: true, message: 'Password is required' },
+              { min: 6, message: 'Password must be at least 6 characters' },
+              { max: 12, message: 'Password must not exceed 12 characters' },
+              { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]/, message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number' },
+            ]}>
               <Input.Password type="password" style={{ width: '100%' }}
               autoComplete="new-password"
-               onChange={() => handleInputChange('password')}
+              //  onChange={() => handleInputChange('password')}
               />
             </Form.Item>
           </Col>
@@ -166,9 +185,9 @@ console.log("value",value)
 
         <Row gutter={16}>
           <Col xs={24} md={8}>
-            <Form.Item label="Employee Code*" name="code">
+            <Form.Item label="Employee Code" name="code" initialValue={""}>
               <Input style={{ width: '100%' }}
-              onChange={() => handleInputChange('code')}
+              // onChange={() => handleInputChange('code')}
 
               />
             </Form.Item>
@@ -176,13 +195,14 @@ console.log("value",value)
           <Col xs={24} md={8}>
             <Form.Item label="Manager" name="manager">
               <Select placeholder="Select Manager" style={{ width: '100%' }}>
+              <Option defaultValue=""> </Option>
                 <Option value="Saad">Saad</Option>
                 <Option value="Farrukh">Farrukh</Option>
               </Select>
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
-            <Form.Item label="Bank" name="bank">
+            <Form.Item label="Bank" name="bank" initialValue={""}>
               <Input style={{ width: '100%' }} />
             </Form.Item>
           </Col>
@@ -190,7 +210,7 @@ console.log("value",value)
 
         <Row gutter={16}>
           <Col xs={24} md={8}>
-            <Form.Item label="Phone #" name="phone">
+            <Form.Item label="Phone #" name="phone" initialValue={""}>
               <Input style={{ width: '100%' }}
                 maxLength={11} 
                 onChange={(e) => handleValidationClear('phone', 11, e.target.value)}
@@ -198,13 +218,16 @@ console.log("value",value)
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
-            <Form.Item label="Provide Access" name="accesslevels" hasFeedback={true} >
+            <Form.Item label="Provide Access" name="accesslevels" hasFeedback={true} rules={[
+              { required: true, message: 'Provide Access is required'},
+              {validator: validateAccessLevels}
+            ]}>
             <Select 
               style={{ width: "100%" }}
               placeholder="Provide Access"
               mode="multiple"
               onChange={handleAccessLevelChange}
->
+              >
                 <Option value="Admin">Admin</Option>
                 <Option value="Dashboard"  disabled={isAdminSelected} >Dashboard</Option>
                 <Option value="Recipe"  disabled={isAdminSelected}>Recipe</Option>
@@ -217,7 +240,7 @@ console.log("value",value)
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
-            <Form.Item label="Account #" name="account">
+            <Form.Item label="Account #" name="account" initialValue={""}>
               <Input style={{ width: '100%' }} />
             </Form.Item>
           </Col>

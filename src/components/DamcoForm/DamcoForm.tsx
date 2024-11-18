@@ -143,7 +143,7 @@ const onChangeDate = (e:any,dateTag:string) => {
   ));
 
 const fetchDamcoExecute = async (position:any, startDate?:string | null,endDate?:string | null) => {
-  const response = await axios.get('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/damco-records',{
+  const response = await axios.get('http://127.0.0.1:8001/damco-records',{
     headers: { status: position},
     params:  { start_date: startDate, end_date: endDate }, 
     responseType: 'json',});
@@ -153,7 +153,7 @@ const fetchDamcoExecute = async (position:any, startDate?:string | null,endDate?
 
 const fetchDamcoAmmend = async (position:any, startDate?:string | null,endDate?:string | null) => {
   console.log('fetchDamcoAmmend',startDate, endDate); 
-  const response = await axios.get('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/damco-ammend-records',{
+  const response = await axios.get('http://127.0.0.1:8001/damco-ammend-records',{
     headers: { status: position},
     params:  { start_date: startDate, end_date: endDate }, 
     responseType: 'json',});
