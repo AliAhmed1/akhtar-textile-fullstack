@@ -121,7 +121,7 @@ if(response.data.status === "200") {
   }
   const handleCancel = () => {
     setIsModalVisible(false);
-    
+    form.resetFields();
   };
 
   const handleFormSuccess = () => {

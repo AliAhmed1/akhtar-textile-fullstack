@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input , Spin } from 'antd';
+import { Modal, Button, Input , Spin, Form, Pagination } from 'antd';
 import EmployeeForm from '@/components/EmployeeForm/EmployeeForm';
 import { LoadingOutlined } from '@ant-design/icons';
 import { FormInstance } from 'antd/lib/form'; // Import FormInstance
@@ -24,6 +24,7 @@ interface User {
   account: string | null;           // Account information (nullable)
   createdBy: string | null;         // User ID of the creator (nullable)
   updatedBy: string | null;         // User ID of the last updater (nullable)
+  accesslevels: string[];           // Access levels of the user
 }
 
 interface EmployeeFormProps {
@@ -36,22 +37,28 @@ const Employees:React.FC<EmployeeFormProps> = ({userData}) => {
   const [query, setQuery] = useState("");
   const [originalEmployeeList, setOriginalEmployeeList] = useState([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [formRef, setFormRef] = useState<FormInstance | null>(null);  const pageLoadingSpinner = <LoadingOutlined style={{ fontSize: 48, color: '#800080' }} spin />;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
+  // const [formRef, setFormRef] = useState<FormInstance | null>(null); 
+  const [form] = Form.useForm();
+  const pageLoadingSpinner = <LoadingOutlined style={{ fontSize: 48, color: '#800080' }} spin />;
   const [isAdminSelected, setIsAdminSelected] = useState<boolean>(false);
   const router = useRouter();
 
-  const keys = ["name"]
+  const keys = ["name","code","username","cnic"];
   const search = (data:any) => {
     return data.filter((item:any)=>{
-     return keys.some(key=>item[key].toLowerCase().includes(query.toLowerCase()));
+     return keys.some(key=>item[key]?.toLowerCase().includes(query.toLowerCase()));
     })
   }
+  const totalItems = search(userData).length;
 
   useEffect(()=>{
-    const filteredData = search(originalEmployeeList);
-    setUsers(filteredData)
+    const filteredData = search(userData);
+    const paginatedData = filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    setUsers(paginatedData);
 
-  },[query, originalEmployeeList])
+  },[query, originalEmployeeList, currentPage, pageSize]);
   
   const showModal = () => {
     setIsModalVisible(true);
@@ -59,13 +66,37 @@ const Employees:React.FC<EmployeeFormProps> = ({userData}) => {
 
   const handleCancel = () => {
 
-    if (formRef) {
-      formRef.resetFields();
+    // if (formRef) {
+      form.resetFields();
 
-    }
+    // }
     setIsModalVisible(false);
     setIsAdminSelected(false); // Reset the isAdminSelected state
 
+
+  };
+
+  const handleEdit = (user: User) => {
+    console.log("user",user)
+     form.setFieldsValue({
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      password: user.password,
+      code: user.code,
+      department: user.department,
+      designation: user.designation,
+      cnic: user.cnic,
+      manager: user.manager,
+      bank: user.bank,
+      phone: user.phone,
+      account: user.account,
+      createdBy: user.createdBy,
+      updatedBy: user.updatedBy,
+      accesslevels: user.accesslevels.map((level: any) => level.accesslevels),
+    });
+    console.log("form",form.getFieldValue('id'))
+    setIsModalVisible(true);
 
   };
 
@@ -84,7 +115,7 @@ console.log("userData",userData)
         <div className="flex items-center space-x-4">
         <SetupUtilityPanel
           placeholder='Search Names'
-          setQuery={setQuery}
+          setQuery={(value) => setQuery(value)}
           showModal={showModal}
           buttonText="Create"
           />
@@ -115,9 +146,9 @@ console.log("userData",userData)
     </thead>
 
     <tbody className="bg-white divide-y divide-gray-200">
-      {userData.map((user: User ) => (
+      {users.map((user: User ) => (
 
-        <tr key={user.id} className="hover:bg-purple-50 transition duration-200">
+        <tr key={user.id} className="hover:bg-purple-50 transition duration-200" onClick={() => handleEdit(user)} >
           <td className="px-6 py-4 whitespace-nowrap text-[#797FE7] font-medium">{user.code}</td>
           <td className="px-6 py-4 whitespace-nowrap">
             <span className="font-semibold">Name:</span> <span className='text-[#797FE7] font-medium'>{user.name}</span>
@@ -144,6 +175,20 @@ console.log("userData",userData)
     </tbody>
   </table>
 </div>
+{/* Pagination */}
+<div className="mt-4">
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={totalItems}
+          onChange={(page, pageSize) => {
+            setCurrentPage(page);
+            setPageSize(pageSize);
+          }}
+          // showSizeChanger
+          // pageSizeOptions={[5, 10, 20, 50]}
+        />
+      </div>
 
       {/* Modal */}
       <Modal
@@ -158,7 +203,7 @@ console.log("userData",userData)
 
         <EmployeeForm onSuccess={handleFormSuccess}
          setIsModalVisible={setIsModalVisible}
-         setFormRef={setFormRef} 
+         form={form} 
          setIsAdminSelected={setIsAdminSelected}
          isAdminSelected={isAdminSelected}
          />

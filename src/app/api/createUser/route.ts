@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
+import { da } from 'date-fns/locale';
 
 export async function POST(request: Request) {
 
@@ -10,29 +11,40 @@ export async function POST(request: Request) {
     const {id, username, password, name, account, bank, cnic, code, department, designation, manager, phone, accesslevels } = body;
   const access_levels = accesslevels;
     delete body.accesslevels;
-    
+    console.log('access_levels',access_levels);
     console.log('body',body);
-
-    const hashedPassword = await bcrypt.hash(password, 10);
+    let hashedPassword = "";
+    if (password) {
+     hashedPassword = await bcrypt.hash(password, 10);
+     body.password = hashedPassword;
+    }
+    console.log('hashedPassword',hashedPassword);
     // Check if the user already exists
-    if(id !== undefined){
-      await prisma.users.update({where:{id:id},data:{username:username,password:hashedPassword,name:name,account:account,bank:bank,cnic:cnic,code:code,department:department,designation:designation,manager:manager,phone:phone}})
-      const existingAccessLevels = await prisma.access_levels.findMany({where:{usersid:id},select:{accesslevels:true}});
-      const notCommonAccessLevels = access_levels.filter((level: any) => existingAccessLevels.some((existingLevel) => existingLevel.accesslevels !== level));
-      // const commonAccessLevels = access_levels.filter((level: any) => existingAccessLevels.some((existingLevel) => existingLevel.accesslevels === level));
+    if(id){
+      await prisma.users.update({data:body,where:{id:BigInt(id)}});
+      // const existingAccessLevels = await prisma.access_levels.findMany({where:{usersid:id},select:{accesslevels:true}});
+      // console.log('existingAccessLevels',existingAccessLevels);
+      // const notCommonAccessLevels = access_levels.filter((level: any) => existingAccessLevels.some((existingLevel) => existingLevel.accesslevels !== level));
+      // console.log('notCommonAccessLevels',notCommonAccessLevels);
+      // // const commonAccessLevels = access_levels.filter((level: any) => existingAccessLevels.some((existingLevel) => existingLevel.accesslevels === level));
 
-      if (notCommonAccessLevels.length > 0) {
-        notCommonAccessLevels.map(async (level: any) => {
-          await prisma.access_levels.deleteMany({where:{usersid:id,accesslevels:level}});
-        })
-      } 
+      // if (notCommonAccessLevels.length > 0) {
+        console.log("check1");
+        // notCommonAccessLevels.map(async (level: any) => {
+          await prisma.access_levels.deleteMany({where:{usersid:id}});
+        // })
+      // } 
 
       access_levels.map(async (level: any) => {
-        await prisma.access_levels.create({data:{usersid:id,accesslevels:level}});
+        const result = await prisma.access_levels.create({data:{usersid:id,accesslevels:level}});
+        console.log('result',result);
       })
       return NextResponse.json({ message: 'User updated successfully' }, { status: 201 });
   }
+  console.log('check2');
     delete body.id;
+
+    body.password = hashedPassword;
 
     const newUserResult = await prisma.users.create({
       data: body

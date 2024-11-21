@@ -8,47 +8,32 @@ const { Option } = Select;
 interface EmployeeFormProps {
   setIsModalVisible: (visible: boolean) => void;
   onSuccess: () => void;
-  setFormRef: (form: any) => void;
+  // setFormRef: (form: any) => void;
+  form:any;
   setIsAdminSelected: (value: boolean) => void; 
   isAdminSelected: boolean;
 
 }
 
-// const validationSchema = yup.object().shape({
-//   name: yup.string().required('Name is required'),
-//   username: yup.string().required('Username is required'),
-//   password: yup.string().required('Password is required'),
-//   code: yup.string().required('Employee Code is required'),
-//   phone: yup
-//   .string()
-//   .length(11, 'Phone # must be exactly 11 digits')
-//   .matches(/^\d{11}$/, 'Phone # must be exactly 11 digits'),
-//   cnic: yup
-//   .string()
-//   .length(13, 'CNIC must be exactly 13 digits')
-//   .matches(/^\d{13}$/, 'CNIC must be a 13-digit number'),
-//   accesslevels: yup.array().length(1, 'Please select at least one access level').required('Access levels are required'),
-//    // Ensures it only contains digits
-
-// });
-
-const EmployeeForm: React.FC<EmployeeFormProps> = ({ setIsModalVisible,onSuccess,setFormRef,setIsAdminSelected, isAdminSelected  }) => {
-  const [form] = Form.useForm();
+const EmployeeForm: React.FC<EmployeeFormProps> = ({ setIsModalVisible,onSuccess,form,setIsAdminSelected, isAdminSelected  }) => {
+  // const [form] = Form.useForm();
   const [loading, setLoading] = useState(false); // Loader state
 
   const [selectedAccessLevels, setSelectedAccessLevels] = useState<string[]>([]);
   // const [isAdminSelected, setIsAdminSelected] = useState<boolean>(false);
 
-  useEffect(() => {
-    setFormRef(form);
+  // useEffect(() => {
+  //   form(form);
 
-  }, [form, setFormRef]);
+  // }, [form, setFormRef]);
   
   const onFinish = async (values: any) => {
     setLoading(true); // Start loading
     try {
       // await validationSchema.validate(values, { abortEarly: false });
 
+      values.password===null && delete values.password
+      console.log('Form values:', values);
       const response = await fetch('/api/createUser', {
         method: 'POST',
         headers: {
@@ -114,10 +99,34 @@ console.log("value",value)
     }
   };
 
+  const passwordRules = form.getFieldValue('id')
+  ? [
+      { min: 6, message: 'Password must be at least 6 characters' },
+      { max: 12, message: 'Password must not exceed 12 characters' },
+      {
+        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]/,
+        message:
+          'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+      },
+    ]
+  : [
+      { required: true, message: 'Password is required' },
+      { min: 6, message: 'Password must be at least 6 characters' },
+      { max: 12, message: 'Password must not exceed 12 characters' },
+      {
+        pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]/,
+        message:
+          'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+      },
+    ];
+
 
   return (
     <Form form={form} layout="vertical" onFinish={onFinish} autoComplete="off">
       {/* Your form fields here */}
+      <Form.Item name="id" hidden>
+        <Input />
+      </Form.Item>
       <Row gutter={16}>
           <Col xs={24} md={8}>
             <Form.Item label="Name" name="name" rules={[{ required: true, message: 'Name is required' }]}>
@@ -149,7 +158,6 @@ console.log("value",value)
           <Col xs={24} md={8}>
             <Form.Item label="CNIC" name="cnic"  rules={[
       { required: true, message: 'CNIC is required' },
-      { len: 13, message: 'CNIC must be exactly 13 digits' },
       { pattern: /^\d{13}$/, message: 'CNIC must be a 13-digit number' },
     ]}>
               <Input style={{ width: '100%' }} 
@@ -169,12 +177,7 @@ console.log("value",value)
             </Form.Item>
           </Col>
           <Col xs={24} md={8}>
-            <Form.Item label="Password" name="password" rules={[
-              { required: true, message: 'Password is required' },
-              { min: 6, message: 'Password must be at least 6 characters' },
-              { max: 12, message: 'Password must not exceed 12 characters' },
-              { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]/, message: 'Password must contain at least one uppercase letter, one lowercase letter, and one number' },
-            ]}>
+            <Form.Item label="Password" name="password" rules={passwordRules}>
               <Input.Password type="password" style={{ width: '100%' }}
               autoComplete="new-password"
               //  onChange={() => handleInputChange('password')}

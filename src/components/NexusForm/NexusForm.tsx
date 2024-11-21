@@ -330,7 +330,7 @@ handleRecords(position,start,end);
 
       <Row style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
         <Col>
-          <h1 className="text-[#343C6A] text-[20px] font-bold md:mr-[14rem] lg:mr-[34rem] xl:mr-[54rem]">Result</h1>
+          <h1 className="text-[#343C6A] text-[20px] font-bold md:mr-[13rem] lg:mr-[34rem] xl:mr-[54rem]">Result</h1>
         </Col>
         {/* <Col>
         <div className='flex border border-gray-300 p-[5px] rounded-md mr-3 pd-[10px] pl-[12px] pr-[12px] bg-white'>

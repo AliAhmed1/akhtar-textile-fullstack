@@ -403,7 +403,7 @@ const handleMenuClick = async (e: { key: string }) => {
 
       <Row style={{ marginTop: '20px', marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
         <Col>
-          <h1 className="text-[#343C6A] text-[20px] font-bold md:mr-[6rem] lg:mr-112 xl:mr-192">Result</h1>
+          <h1 className="text-[#343C6A] text-[20px] font-bold md:mr-[7rem] lg:mr-112 xl:mr-192">Result</h1>
         </Col>
         <Col>
         <div className='flex border border-gray-300 p-[5px] rounded-md mr-3 pd-[10px] pl-[12px] pr-[12px] bg-white'>
