@@ -220,14 +220,13 @@ import ExcelJS from 'exceljs';
 export async function POST(request:NextRequest) {
   try {
     const {data} = await request.json();
-    console.log(data.recipesResult);
+    // console.log(data.recipesResult);
     const { recipesResult, stepsResult, chemicalsResult, chemicalsAssocResult } = data;
-    // console.log('recipes',recipesResult,'steps',stepsResult,'chemicals',chemicalsResult,'chemicalsAssociation',chemicalsAssocResult);
-    // console.log(request.json());
-    const recipes = recipesResult.rows;
-    const steps = stepsResult.rows;
-    const chemicals = chemicalsResult.rows;
-    const chemicalsAssociation = chemicalsAssocResult.rows;
+
+    const recipes = recipesResult;
+    const steps = stepsResult;
+    const chemicals = chemicalsResult;
+    const chemicalsAssociation = chemicalsAssocResult;
 // console.log(recipes);
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Recipes');
@@ -305,7 +304,9 @@ export async function POST(request:NextRequest) {
       const recipeSteps = steps.filter((step:any) => step.recipesid === recipe.id);
       let firstStepRow = worksheet.lastRow ? worksheet.lastRow.number + 1 : 1;
       let rowObject = {}
+      console.log("recipeSteps");
       recipeSteps.forEach((step:any, stepIndex:any) => {
+        console.log("step");
         const stepChemicals = chemicalsAssociation
           .filter((assoc:any) => assoc.stepid === step.id)
           .map((assoc:any) => {
@@ -317,6 +318,7 @@ export async function POST(request:NextRequest) {
             };
           });
         stepChemicals.forEach((chemical:any, chemicalIndex:any) => {
+          console.log( "chemical");
           const rowKey = `${recipeIndex}-${stepIndex}-${chemicalIndex}-${recipe.recipe || recipe.id}-${step.step_no}-${chemical.chemical_name}`;
 
           if (!rowSet.has(rowKey)) {
@@ -402,12 +404,14 @@ export async function POST(request:NextRequest) {
       if (column && typeof column.eachCell === 'function') {
         let maxLength = 0;
         column.eachCell({ includeEmpty: true }, (cell) => {
+          // console.log(cell.value?.toString());
           const columnLength = cell.value ? cell.value.toString().length : 10;
+          // console.log(columnLength,cell.value?.toString());
           if (columnLength > maxLength) {
             maxLength = columnLength;
           }
         });
-        column.width = maxLength < 10 ? 10 : maxLength;
+        column.width = maxLength <= 10 ? 14 : maxLength+4;
         column.alignment = { horizontal: 'center', vertical: 'middle' };
       }
     });
