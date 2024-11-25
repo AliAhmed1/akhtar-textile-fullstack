@@ -475,7 +475,7 @@ const RecipeForm: React.FC = () => {
               step: step.step_no,
               action: step.action,
               minutes: step.minutes,
-              liters: step.litres,
+              liters: step.liters,
               rpm: step.rpm,
               centigrade: step.centigrade,
             };

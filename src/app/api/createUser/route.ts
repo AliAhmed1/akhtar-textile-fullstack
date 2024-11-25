@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
-import { da } from 'date-fns/locale';
+
 
 export async function POST(request: Request) {
 
@@ -22,13 +22,7 @@ export async function POST(request: Request) {
     // Check if the user already exists
     if(id){
       await prisma.users.update({data:body,where:{id:BigInt(id)}});
-      // const existingAccessLevels = await prisma.access_levels.findMany({where:{usersid:id},select:{accesslevels:true}});
-      // console.log('existingAccessLevels',existingAccessLevels);
-      // const notCommonAccessLevels = access_levels.filter((level: any) => existingAccessLevels.some((existingLevel) => existingLevel.accesslevels !== level));
-      // console.log('notCommonAccessLevels',notCommonAccessLevels);
-      // // const commonAccessLevels = access_levels.filter((level: any) => existingAccessLevels.some((existingLevel) => existingLevel.accesslevels === level));
 
-      // if (notCommonAccessLevels.length > 0) {
         console.log("check1");
         // notCommonAccessLevels.map(async (level: any) => {
           await prisma.access_levels.deleteMany({where:{usersid:id}});

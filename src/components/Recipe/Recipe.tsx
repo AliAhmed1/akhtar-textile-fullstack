@@ -177,6 +177,7 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
       data.files.forEach((file: any, index: number) => {
         // console.log(file)
         let data = {
+          key: index,
           srNo: index + 1,
           title: file.title,
           created_at: formatDate(file.created_at)
