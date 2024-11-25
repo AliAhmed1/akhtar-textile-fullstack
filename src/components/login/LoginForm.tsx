@@ -89,8 +89,8 @@ const LoginForm: React.FC<ILoginForm> = ({ userId }) => {
         {/* Main Content Section */}
         <div className="absolute w-[70%] bg-[#EBEFFF] h-screen">
           <div className="relative container mx-auto">
-            <div className="relative md:pt-[30%] pl-[25%] lg:pt-[23%]">
-              <div className="relative color-[#1A1A1A] md:ml-[17.5%] font-inter md:text-[2vh] font-[700] md:text-left lg:text-[3.5vh] ">
+            <div className="relative xs:pt-[45%] xs:pl-[8%] md:pt-[30%] pl-[25%] lg:pt-[23%]">
+              <div className="relative color-[#1A1A1A] xs:text-[2.25vh] md:ml-[17.5%] font-inter md:text-[2vh] font-[700] md:text-left lg:text-[3.5vh] ">
                 Welcome Back!
               </div>
 

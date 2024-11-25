@@ -23,7 +23,8 @@ const config: Config = {
       'xl': '1920px',
       'lg': '1600px',
       'md': '1280px',
-      // 'sm': '900px',
+      'sm': '900px',
+      'xs': '600px',
 
     }
   },
