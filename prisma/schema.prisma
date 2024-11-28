@@ -3,13 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider = "cockroachdb"
-  url      = env("NEXT_PUBLIC_DATABASE_URL")
+  provider = "postgresql"
+  url      = env("NEXT_PUBLIC_PGADMIN_DB_URL")
 }
 
 model access_levels {
   id           BigInt    @id @default(autoincrement())
-  accesslevels String    @db.String(255)
+  accesslevels String    @db.VarChar(256)
   usersid      BigInt
   created_at   DateTime? @default(now()) @db.Timestamp(6)
   updated_at   DateTime? @default(now()) @db.Timestamp(6)
@@ -30,21 +30,21 @@ model chemical_association {
 model chemicals {
   id                   BigInt                 @id @default(autoincrement())
   created_at           DateTime               @default(now()) @db.Timestamp(6)
-  name                 String?                @unique(map: "unique_chemical_name") @db.String(255)
+  name                 String?                @unique(map: "unique_chemical_name") @db.VarChar(256)
   kg_per_can           BigInt?
-  cost_uom             String?                @db.String(50)
-  type_and_use         String?                @db.String(255)
+  cost_uom             String?                @db.VarChar(50)
+  type_and_use         String?                @db.VarChar(256)
   cost_per_unit        Decimal?               @db.Decimal(10, 2)
-  unit_used            String?                @db.String(255)
+  unit_used            String?                @db.VarChar(256)
   unit_conversion      Decimal?               @db.Decimal(10, 2)
   cost_per_kg          Decimal?               @db.Decimal(10, 2)
-  full_name            String?                @db.String(255)
+  full_name            String?                @db.VarChar(256)
   chemical_association chemical_association[]
 }
 
 model history {
   id         BigInt   @id @default(autoincrement())
-  title      String?  @db.String(255)
+  title      String?  @db.VarChar(256)
   created_at DateTime @default(now()) @db.Timestamp(6)
   user       BigInt?
   users      users?   @relation(fields: [user], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_history_user")
@@ -54,29 +54,29 @@ model recipes {
   id           BigInt   @id(map: "recipe_pkey") @default(autoincrement())
   created_at   DateTime @default(now()) @db.Timestamp(6)
   load_size    BigInt?
-  machine_type String?  @db.String(255)
-  finish       String?  @db.String(255)
-  fabric       String?  @db.String(255)
+  machine_type String?  @db.VarChar(256)
+  finish       String?  @db.VarChar(256)
+  fabric       String?  @db.VarChar(256)
   recipe       BigInt?  @unique(map: "unique_recipe_name")
-  fno          String?  @db.String(255)
-  name         String?  @db.String(255)
+  fno          String?  @db.VarChar(256)
+  name         String?  @db.VarChar(256)
   steps        steps[]
 }
 
 model steps {
   id                   BigInt                 @id @default(autoincrement())
   created_at           DateTime               @default(now()) @db.Timestamp(6)
-  action               String?                @db.String(255)
+  action               String?                @db.VarChar(256)
   liters               BigInt?
   rpm                  BigInt?
   centigrade           BigInt?
-  ph                   String?                @db.String(255)
-  lr                   String?                @db.String(255)
-  tds                  String?                @db.String(255)
-  tss                  String?                @db.String(255)
+  ph                   String?                @db.VarChar(256)
+  lr                   String?                @db.VarChar(256)
+  tds                  String?                @db.VarChar(256)
+  tss                  String?                @db.VarChar(256)
   recipesid            BigInt?
-  step_no              String?                @db.String(255)
-  minutes              String?                @db.String(255)
+  step_no              String?                @db.VarChar(256)
+  minutes              String?                @db.VarChar(256)
   step_id              BigInt
   chemical_association chemical_association[]
   recipes              recipes?               @relation(fields: [recipesid], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_stept_table")
@@ -85,19 +85,19 @@ model steps {
 model users {
   id            BigInt          @id @default(autoincrement())
   created_at    DateTime        @default(now()) @db.Timestamp(6)
-  username      String          @unique(map: "unique_username") @db.String(255)
-  password      String          @db.String(255)
-  name          String          @db.String(255)
-  department    String?         @db.String(255)
-  designation   String?         @db.String(255)
-  cnic          String?         @db.String(255)
-  code          String          @db.String(255)
-  manager       String?         @db.String(255)
-  bank          String?         @db.String(255)
-  phone         String?         @db.String(255)
-  account       String?         @db.String(255)
-  createdby     String?         @db.String(255)
-  updatedby     String?         @db.String(255)
+  username      String          @unique(map: "unique_username") @db.VarChar(256)
+  password      String          @db.VarChar(256)
+  name          String          @db.VarChar(256)
+  department    String?         @db.VarChar(256)
+  designation   String?         @db.VarChar(256)
+  cnic          String?         @db.VarChar(256)
+  code          String          @db.VarChar(256)
+  manager       String?         @db.VarChar(256)
+  bank          String?         @db.VarChar(256)
+  phone         String?         @db.VarChar(256)
+  account       String?         @db.VarChar(256)
+  createdby     String?         @db.VarChar(256)
+  updatedby     String?         @db.VarChar(256)
   access_levels access_levels[]
   history       history[]
 }

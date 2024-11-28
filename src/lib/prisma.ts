@@ -8,5 +8,5 @@ export const prisma =
         log: ['query'],
     });
 
-if (process.env.NEXT_PUBLIC_NODE_ENV !== 'production') 
+if (process.env.NEXT_PUBLIC_PGADMIN_DB_URL !== 'production') 
     globalForPrisma.prisma = prisma;

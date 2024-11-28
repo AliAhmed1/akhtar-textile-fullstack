@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 // types.setTypeParser(1700, val => Number(val)); // NUMERIC
 // const {fil}
 const client = new Client({
-  connectionString: process.env.NEXT_PUBLIC_DATABASE_URL,
+  connectionString: process.env.NEXT_PUBLIC_PGADMIN_DB_URL,
 });
   
   let failed: any[] = [];

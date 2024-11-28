@@ -7,17 +7,17 @@ import Link from "next/link";
 function AppHeader() {
   return (
     <Header className="!bg-white border-b border-[#f1f1f1] flex items-center  top-0 z-10">
-      <MenuOutlined className="mr-4"/>
+
       <div className="flex justify-between w-[100%]">
       <div className="flex">
       <Link href="/">
         <img
-          src="img/akhtar-logo.png"
+          src="img/hail1.png"
           alt="Akhtar Texttile"
           // style={{width:"100px;"}}  
           style={{
             width: "130px", 
-            backgroundColor: "#595959",
+            // backgroundColor: "#595959",
             borderRadius:"3px", 
             // padding:"2px", 
           }}

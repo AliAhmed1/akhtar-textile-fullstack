@@ -14,7 +14,8 @@ import {
   BulbOutlined,
   UserOutlined,
   UploadOutlined,
-  ExperimentOutlined
+  ExperimentOutlined,
+  MenuOutlined
 } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import { notification } from "antd";
@@ -119,7 +120,6 @@ const AppSideMenu: React.FC<IAppSideMenu> = ({ accessData, userId }) => {
   };
 
   const menuItems = [
-
     {
       label: <Link href="/dashboard" className="text-black">Dashboard</Link>,
       key: "2",
@@ -235,6 +235,7 @@ const AppSideMenu: React.FC<IAppSideMenu> = ({ accessData, userId }) => {
   };
 
   return (
+    
     <Menu
       mode="inline"
       items={availableMenuItems.map(item => ({

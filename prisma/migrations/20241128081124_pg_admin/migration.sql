@@ -1,8 +1,8 @@
 -- CreateTable
 CREATE TABLE "access_levels" (
-    "id" INT8 NOT NULL DEFAULT unique_rowid(),
-    "accesslevels" STRING(255) NOT NULL,
-    "usersid" INT8 NOT NULL,
+    "id" BIGSERIAL NOT NULL,
+    "accesslevels" VARCHAR(256) NOT NULL,
+    "usersid" BIGINT NOT NULL,
     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
 
@@ -11,95 +11,95 @@ CREATE TABLE "access_levels" (
 
 -- CreateTable
 CREATE TABLE "chemical_association" (
-    "id" INT8 NOT NULL DEFAULT unique_rowid(),
+    "id" BIGSERIAL NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "stepid" INT8,
-    "chemicalid" INT8,
-    "percentage" FLOAT8,
-    "dosage" FLOAT8,
+    "stepid" BIGINT,
+    "chemicalid" BIGINT,
+    "percentage" DOUBLE PRECISION,
+    "dosage" DOUBLE PRECISION,
 
     CONSTRAINT "chemical_association_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "chemicals" (
-    "id" INT8 NOT NULL DEFAULT unique_rowid(),
+    "id" BIGSERIAL NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "name" STRING(255),
-    "kg_per_can" INT8,
-    "cost_uom" STRING(50),
-    "type_and_use" STRING(255),
+    "name" VARCHAR(256),
+    "kg_per_can" BIGINT,
+    "cost_uom" VARCHAR(50),
+    "type_and_use" VARCHAR(256),
     "cost_per_unit" DECIMAL(10,2),
-    "unit_used" STRING(255),
+    "unit_used" VARCHAR(256),
     "unit_conversion" DECIMAL(10,2),
     "cost_per_kg" DECIMAL(10,2),
-    "full_name" STRING(255),
+    "full_name" VARCHAR(256),
 
     CONSTRAINT "chemicals_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "history" (
-    "id" INT8 NOT NULL DEFAULT unique_rowid(),
-    "title" STRING(255),
+    "id" BIGSERIAL NOT NULL,
+    "title" VARCHAR(256),
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "user" INT8,
+    "user" BIGINT,
 
     CONSTRAINT "history_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "recipes" (
-    "id" INT8 NOT NULL DEFAULT unique_rowid(),
+    "id" BIGSERIAL NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "load_size" INT8,
-    "machine_type" STRING(255),
-    "finish" STRING(255),
-    "fabric" STRING(255),
-    "recipe" INT8,
-    "fno" STRING(255),
-    "name" STRING(255),
+    "load_size" BIGINT,
+    "machine_type" VARCHAR(256),
+    "finish" VARCHAR(256),
+    "fabric" VARCHAR(256),
+    "recipe" BIGINT,
+    "fno" VARCHAR(256),
+    "name" VARCHAR(256),
 
     CONSTRAINT "recipe_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "steps" (
-    "id" INT8 NOT NULL DEFAULT unique_rowid(),
+    "id" BIGSERIAL NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "action" STRING(255),
-    "liters" INT8,
-    "rpm" INT8,
-    "centigrade" INT8,
-    "ph" STRING(255),
-    "lr" STRING(255),
-    "tds" STRING(255),
-    "tss" STRING(255),
-    "recipesid" INT8,
-    "step_no" STRING(255),
-    "minutes" STRING(255),
-    "step_id" INT8 NOT NULL,
+    "action" VARCHAR(256),
+    "liters" BIGINT,
+    "rpm" BIGINT,
+    "centigrade" BIGINT,
+    "ph" VARCHAR(256),
+    "lr" VARCHAR(256),
+    "tds" VARCHAR(256),
+    "tss" VARCHAR(256),
+    "recipesid" BIGINT,
+    "step_no" VARCHAR(256),
+    "minutes" VARCHAR(256),
+    "step_id" BIGINT NOT NULL,
 
     CONSTRAINT "steps_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "users" (
-    "id" INT8 NOT NULL DEFAULT unique_rowid(),
+    "id" BIGSERIAL NOT NULL,
     "created_at" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "username" STRING(255) NOT NULL,
-    "password" STRING(255) NOT NULL,
-    "name" STRING(255) NOT NULL,
-    "department" STRING(255),
-    "designation" STRING(255),
-    "cnic" STRING(255),
-    "code" STRING(255) NOT NULL,
-    "manager" STRING(255),
-    "bank" STRING(255),
-    "phone" STRING(255),
-    "account" STRING(255),
-    "createdby" STRING(255),
-    "updatedby" STRING(255),
+    "username" VARCHAR(256) NOT NULL,
+    "password" VARCHAR(256) NOT NULL,
+    "name" VARCHAR(256) NOT NULL,
+    "department" VARCHAR(256),
+    "designation" VARCHAR(256),
+    "cnic" VARCHAR(256),
+    "code" VARCHAR(256) NOT NULL,
+    "manager" VARCHAR(256),
+    "bank" VARCHAR(256),
+    "phone" VARCHAR(256),
+    "account" VARCHAR(256),
+    "createdby" VARCHAR(256),
+    "updatedby" VARCHAR(256),
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -127,4 +127,3 @@ ALTER TABLE "history" ADD CONSTRAINT "fk_history_user" FOREIGN KEY ("user") REFE
 
 -- AddForeignKey
 ALTER TABLE "steps" ADD CONSTRAINT "fk_stept_table" FOREIGN KEY ("recipesid") REFERENCES "recipes"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
-

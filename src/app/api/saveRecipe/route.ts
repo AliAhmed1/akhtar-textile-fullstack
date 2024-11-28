@@ -1,7 +1,7 @@
 import { Pool } from 'pg';
 import { NextResponse } from 'next/server';
 
-const pool = new Pool({ connectionString: process.env.NEXT_PUBLIC_DATABASE_URL });
+const pool = new Pool({ connectionString: process.env.NEXT_PUBLIC_PGADMIN_DB_URL });
 
 export async function POST(request: Request) {
     const client = await pool.connect();
