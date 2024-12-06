@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import ExcelJS from 'exceljs';
+import moment from "moment";
 
 export async function POST(request: NextRequest) {
     try{
@@ -29,7 +30,8 @@ export async function POST(request: NextRequest) {
             if (!rowSet.has(record.id)) {
                 const cell = worksheet.addRow({
                     po_number: record.po_number,
-                    plan_hod: new Date(record.plan_hod),
+                    // plan_hod: new Date(record.plan_hod),
+                    plan_hod: moment(record.plan_hod).format('DD-MMM-YYYY'),
                     country: record.country,
                     order_qty: record.order_qty,
                     carton_qty: parseFloat(record.carton_qty),
@@ -38,10 +40,8 @@ export async function POST(request: NextRequest) {
                     ctn_type: record.ctn_type,
                     booking_id: record.booking_id,
                 });
-                const plan_hodCell = cell.getCell(2).address;
                 const carton_cbmCell = cell.getCell(7).address;
                 const carton_qtyCell = cell.getCell(5).address;
-                worksheet.getCell(`${plan_hodCell}`).numFmt = 'd-mmm-yyyy';
                 worksheet.getCell(`${carton_cbmCell}`).numFmt = '0.00';
                 worksheet.getCell(`${carton_qtyCell}`).numFmt = '0.00';
                 const gross_weightCell = cell.getCell(6).address;
