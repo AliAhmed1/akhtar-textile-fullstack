@@ -91,8 +91,10 @@ const onChangeDate = (e:any,dateTag:string) => {
     try {
 
       if(selectedAction === "Execute"){
-        const data = await fetchDamcoExecute(position);
-        console.log(data)
+        console.log('pos',position);
+        console.log('start',startDate,'end',endDate);
+        const data = await fetchDamcoExecute(position,startDate,endDate);
+        console.log("data execute",data)
       const response = await axios.post('/api/exportDamcoRecords', {data},
         {headers:{'Content-Type': 'application/json'},
         responseType: 'blob',
@@ -106,7 +108,7 @@ const onChangeDate = (e:any,dateTag:string) => {
       message.success('File Downloaded');
       document.body.removeChild(link);
     }else {
-      const data = await fetchDamcoAmmend(position);
+      const data = await fetchDamcoAmmend(position,startDate,endDate);
       const response = await axios.post('/api/exportDamcoRecords', {data},
         {headers:{'Content-Type': 'application/json'},
         responseType: 'blob',
