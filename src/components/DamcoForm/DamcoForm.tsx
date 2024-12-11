@@ -34,6 +34,7 @@ const [automationId, setAutomationId] = useState<boolean>(false);
 const [isExporting, setIsExporting] = useState<boolean>(false);
 const [fileList, setFileList] = useState<UploadFile[]>([]);
 const [selectedAction, setSelectedAction] = useState<'Execute' | 'Ammend'>('Execute');
+const [response, setResponse] = useState<string>();
 // const onChange: DatePickerProps['onChange'] = (date, dateString) => {
 //     console.log(date, dateString);
 //   };
@@ -143,22 +144,31 @@ const onChangeDate = (e:any,dateTag:string) => {
   ));
 
 const fetchDamcoExecute = async (position:any, startDate?:string | null,endDate?:string | null) => {
+  try{
   const response = await axios.get('http://127.0.0.1:8001/damco-records',{
     headers: { status: position},
     params:  { start_date: startDate, end_date: endDate }, 
     responseType: 'json',});
     console.log('execute',response.data.damco_records);
     return  response.data.damco_records
+  }catch (error){
+    // console.log("ddsss")
+    setResponse("null");
+  }
 }
 
 const fetchDamcoAmmend = async (position:any, startDate?:string | null,endDate?:string | null) => {
   console.log('fetchDamcoAmmend',startDate, endDate); 
+  try{
   const response = await axios.get('http://127.0.0.1:8001/damco-ammend-records',{
     headers: { status: position},
     params:  { start_date: startDate, end_date: endDate }, 
     responseType: 'json',});
     console.log('ammend',response.data.damco_ammend_records);
     return response.data.damco_ammend_records
+  }catch (error){
+    setResponse("null");
+  }
 } 
 
   const handleRecords = async (pos: any, key:any, startDate?:string | null, endDate?:string | null) => {
@@ -442,7 +452,7 @@ const handleMenuClick = async (e: { key: string }) => {
 
 
 <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '15px', }}>
-  {loading ?  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+  {loading || response!=="null" ?  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
   <Spin indicator={<LoadingOutlined spin />} size="large" />
 </div>
 

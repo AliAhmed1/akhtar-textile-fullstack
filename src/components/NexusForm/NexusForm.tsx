@@ -28,6 +28,7 @@ const [searchTerm, setSearchTerm] = useState<string>('');
 const [startDate, setStartDate] = useState<string | null>(null);
 const [endDate, setEndDate] = useState<string | null>(null);
 const [isExporting, setIsExporting] = useState<boolean>(false);
+const [response, setResponse] = useState<string>();
 const onChange: DatePickerProps['onChange'] = (date, dateString) => {
     console.log(date, dateString);
   };
@@ -74,12 +75,17 @@ useEffect(() => {
   ))
 
   const fetchNexus = async (position:any, startDate?:string | null,endDate?:string | null) => {
-    const response = await axios.get('http://127.0.0.1:8001/nexus-records',{
+    try{
+      const response = await axios.get('http://127.0.0.1:8001/nexus-records',{
       headers: { status: position},
       params:  { start_date: startDate, end_date: endDate }, 
       responseType: 'json',});
       console.log('execute',response.data);
       return  response.data.nexus_records
+    }catch (error){
+      setResponse("null");
+      message.error("Failed to fetch failed records");
+    }
   }
   const onChangeDate = (e:any,dateTag:string) => {
     console.log(dateTag);
@@ -132,11 +138,14 @@ handleRecords(position,start,end);
     try {
       setLoading(true);
       const data = await fetchNexus(pos,startDate,endDate);
-      // console.log()
+      // console.log(">>>>>",data)
         setTableData(data);
-      setLoading(false);
     } catch (error) {
+      // console.log(">>>>><<<<<<<<<")
       message.error("Failed to fetch failed records");
+    }
+    finally{
+      setLoading(false);
     }
   }
 
@@ -274,7 +283,7 @@ handleRecords(position,start,end);
     },
   ];
 
-  return ( uploading ? <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',gap: '1rem' }}>
+  return ( uploading  ? <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',gap: '1rem' }}>
     <Spin indicator={<LoadingOutlined spin />} size="large" />
     Automation in progress ...
   </div> : <>
@@ -369,7 +378,7 @@ handleRecords(position,start,end);
 
 
 <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '15px', }}>
-  {loading ?  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+  {loading || response!=="null" ?  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
   <Spin indicator={<LoadingOutlined spin />} size="large" />
 </div>
 
