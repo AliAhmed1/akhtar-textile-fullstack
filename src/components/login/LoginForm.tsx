@@ -62,11 +62,13 @@ const LoginForm: React.FC<ILoginForm> = ({ userId }) => {
       }
       router.push('/dashboard');
       router.refresh();
-      setLoading(false);
 
     } catch (error) {
       console.error('Login failed', error);
       setLoginError('Something went wrong. Please try again.');
+    }
+    finally {
+      setLoading(false);
     }
 
   };
