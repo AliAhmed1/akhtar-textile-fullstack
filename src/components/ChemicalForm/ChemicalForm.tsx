@@ -8,13 +8,15 @@ const { Option } = Select;
 interface ChemicalFormProps {
   setIsModalVisible: (visible: boolean) => void;
   onSuccess: () => void;
+  form: any;
 }
 
-const ChemicalForm: React.FC<ChemicalFormProps> = ({ setIsModalVisible,onSuccess }) => {
-  const [form] = Form.useForm();
+const ChemicalForm: React.FC<ChemicalFormProps> = ({ setIsModalVisible,onSuccess,form }) => {
+
   const [loading, setLoading] = useState(false); // Loader state
 
   const onFinish = async (values: any) => {
+    console.log('Form values:', values);
     setLoading(true); // Start loading
     try {
       const response = await fetch('/api/createChemical', {
@@ -22,12 +24,13 @@ const ChemicalForm: React.FC<ChemicalFormProps> = ({ setIsModalVisible,onSuccess
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify([[values]]),
       });
-
+console.log('response',response);
       if (response.ok) {
-        message.success('Chemical created successfully.');
+        message.success('Cheical created successfully.');
         form.resetFields(); 
+
         onSuccess(); 
         // Optional: Reset form after success
         setIsModalVisible(false);
@@ -45,37 +48,40 @@ const ChemicalForm: React.FC<ChemicalFormProps> = ({ setIsModalVisible,onSuccess
   };
 
   return (
-    <Form form={form} layout="vertical" onFinish={onFinish}>
+    <Form form={form} layout="vertical" onFinish={onFinish} >
+      <Form.Item name="id" hidden>
+        <Input />
+      </Form.Item>
       {/* Your form fields here */}
       <Row gutter={16}>
       <Col xs={24} md={8}>
-    <Form.Item label="Washing Name" name="name">
+    <Form.Item label="Washing Name" name="name" rules={[{ required: true, message: 'Please input your washing name!' }]}>
+      <Input style={{ width: '100%' }}  />
+    </Form.Item>
+  </Col>
+  <Col xs={24} md={8}>
+    <Form.Item label="Full Name" name="full_name" rules={[{ required: true, message: 'Please input your full name!' }]}>
       <Input style={{ width: '100%' }} />
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Full Name" name="full_name">
-      <Input style={{ width: '100%' }} />
+    <Form.Item label="Cost/KG" name="costPerKg" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Cost/KG" name="costPerKg">
-      <Input style={{ width: '100%' }} />
+    <Form.Item label="KG/Can" name="kgPerCan" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="KG/Can" name="kgPerCan">
-      <Input style={{ width: '100%' }} />
+    <Form.Item label="Cost/Unit Of Usage" name="costPerUnit" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Cost/Unit Of Usage" name="costPerUnit">
-      <Input style={{ width: '100%' }} />
-    </Form.Item>
-  </Col>
-  <Col xs={24} md={8}>
-    <Form.Item label="Cost/UOM" name="costUom">
-      <Input style={{ width: '100%' }} />
+    <Form.Item label="Cost/UOM" name="costUom" initialValue={''}>
+      <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
 </Row>
@@ -83,18 +89,18 @@ const ChemicalForm: React.FC<ChemicalFormProps> = ({ setIsModalVisible,onSuccess
 <Row gutter={16}>
  
   <Col xs={24} md={8}>
-    <Form.Item label="Type & Use" name="typeAndUse">
-    <Input style={{ width: '100%' }} />
+    <Form.Item label="Type & Use" name="typeAndUse" initialValue={''}>
+    <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Unit Used" name="unitUsed">
-      <Input style={{ width: '100%' }} />
+    <Form.Item label="Unit Used" name="unitUsed" initialValue={''}>
+      <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Unit Conversion" name="unitConversion">
-      <Input style={{ width: '100%' }} />
+    <Form.Item label="Unit Conversion" name="unitConversion" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
 </Row>
@@ -104,6 +110,7 @@ const ChemicalForm: React.FC<ChemicalFormProps> = ({ setIsModalVisible,onSuccess
       <Button
         type="primary"
         htmlType="submit"
+        onClick={() => form.submit()}
         loading={loading} // Loader when submitting
         disabled={loading} // Disable button while loading
         style={{ backgroundColor: '#797FE7', color: '#ffffff', borderRadius: '100px' }}

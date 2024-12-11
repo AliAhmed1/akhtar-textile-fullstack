@@ -2,17 +2,26 @@
 export const fetchCache = 'force-no-store';
 export const dynamic = 'force-dynamic';
 
-import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
+import { prisma } from '@/lib/prisma';
+import { jwtValidator } from '@/utils/jwtValidator';
+import { NextRequest, NextResponse } from 'next/server';
 
-const pool = new Pool({ connectionString: process.env.NEXT_PUBLIC_DATABASE_URL });
+export async function GET(request: NextRequest) {
 
+  const authHeader = request.headers.get('Authorization');
+  const token =authHeader?.split(' ')[1];
 
-export async function GET() {
+  const isValid = jwtValidator(token);
+  console.log(isValid);
   try {
-    const result = await pool.query('SELECT * FROM "recipes"');
-    // console.log(">>>>>>>",result)
-    return NextResponse.json(result.rows);
+    let result = await prisma.recipes.findMany();
+    result = result.map((recipe: any) => ({
+      ...recipe,
+      id: recipe.id.toString(),
+      load_size: recipe.load_size? recipe.load_size.toString(): null,
+      recipe: recipe.recipe? recipe.recipe.toString(): null,
+    }));
+    return NextResponse.json(result);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

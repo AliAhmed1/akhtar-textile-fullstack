@@ -142,12 +142,12 @@
 //       try {
 //         const response = await fetch(`/api/getRecipeDetails/${id}`);
 //         const data = await response.json();
-  
+
 //         console.log('Fetched Data:', data.steps);
-  
+
 //         if (response.ok) {
 //           setRecipe1(data);
-          
+
 //           form.setFieldsValue({
 //             loadSize: data.load_size,
 //             machineType: data.machine_type,
@@ -156,8 +156,8 @@
 //             fabric: data.fabric,
 //             fno: data.fno,
 //           });
-  
-          
+
+
 //           const recipesDataForTable = data.steps.map((step: any, index: number) => ({
 //             key: index,
 //             step: step.step_no, 
@@ -182,8 +182,8 @@
 //         setLoading(false);
 //       }
 //     };
-    
-  
+
+
 //     const id = pathname?.split('/').pop();
 //     if (id) {
 //       fetchRecipe(id);
@@ -199,7 +199,7 @@
 //       </div>
 //     );
 //   }  
- 
+
 //   return (
 //     <div>
 //       <Row style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -302,6 +302,7 @@ import UploadData from "@/components/UploadData/uploadData";
 import SaveData from "@/components/SaveData/saveData";
 import { usePathname } from "next/navigation";
 import { LoadingOutlined } from "@ant-design/icons";
+import useCheckFetchOnce from "@/utils/useCheckFetchOnce";
 
 const { Option } = Select;
 
@@ -317,6 +318,7 @@ const RecipeForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const tableRef = useRef<any>(null);
   const pageLoadingSpinner = <LoadingOutlined style={{ fontSize: 48, color: "#800080" }} spin />;
+  const checkFetchOnce = useCheckFetchOnce();
 
   interface StepData {
     key: number;
@@ -434,90 +436,92 @@ const RecipeForm: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchRecipe = async (id: string) => {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/getRecipeDetails/${id}`);
-        const data = await response.json();
+  const fetchRecipe = async (id: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/getRecipeDetails/${id}`);
+      const data = await response.json();
 
-        if (response.ok) {
-          setRecipe1(data);
+      if (response.ok) {
+        setRecipe1(data);
 
-          form.setFieldsValue({
-            loadSize: data.load_size,
-            machineType: data.machine_type,
-            finish: data.finish,
-            recipe: data.recipe,
-            fabric: data.fabric,
-            fno: data.fno,
-          });
+        form.setFieldsValue({
+          loadSize: data.load_size,
+          machineType: data.machine_type,
+          finish: data.finish,
+          recipe: data.recipe,
+          fabric: data.fabric,
+          fno: data.fno,
+        });
 
-          // const recipesDataForTable = data.steps.map((step: any, index: number) => ({
-          //   key: index,
-          //   step: step.step_no,
-          //   action: step.action,
-          //   minutes: step.minutes,
-          //   centigrade: step.centigrade,
-          //   liters: step.liters,
-          //   rpm: step.rpm,
-          //   chemicalName: step.chemicals.map((chemical: any) => chemical.chemical_name),
-          //   percentage: step.chemicals.map((chemical: any) => chemical.percentage),
-          //   dosage: step.chemicals.map((chemical: any) => chemical.dosage),
-          // }));
-          const recipesDataForTable = () => {
-            let tableData: any[] = [];
-            data.steps.forEach((step:any,index:number)=>{
-              console.log(step);
-              const baseData = {
-                key: index,
-                step: step.step_no,
-                action: step.action,
-                minutes: step.minutes,
-                liters: step.litres,
-                rpm: step.rpm,
-                centigrade: step.centigrade,
+        // const recipesDataForTable = data.steps.map((step: any, index: number) => ({
+        //   key: index,
+        //   step: step.step_no,
+        //   action: step.action,
+        //   minutes: step.minutes,
+        //   centigrade: step.centigrade,
+        //   liters: step.liters,
+        //   rpm: step.rpm,
+        //   chemicalName: step.chemicals.map((chemical: any) => chemical.chemical_name),
+        //   percentage: step.chemicals.map((chemical: any) => chemical.percentage),
+        //   dosage: step.chemicals.map((chemical: any) => chemical.dosage),
+        // }));
+        const recipesDataForTable = () => {
+          let tableData: any[] = [];
+          data.steps.forEach((step: any, index: number) => {
+            console.log(step);
+            const baseData = {
+              key: index,
+              step: step.step_no,
+              action: step.action,
+              minutes: step.minutes,
+              liters: step.liters,
+              rpm: step.rpm,
+              centigrade: step.centigrade,
             };
-              if(step.chemicals.length > 0) {
-                step.chemicals.forEach((chemical:any) => {
-                  tableData.push({
-                    ...baseData,
-                    chemicalName:chemical.chemical_name,
+            if (step.chemicals.length > 0) {
+              step.chemicals.forEach((chemical: any) => {
+                tableData.push({
+                  ...baseData,
+                  chemicalName: chemical.chemical_name,
                   percentage: chemical.percentage,
                   dosage: chemical.dosage,
-                  });
-                })
-              } else {
-                 tableData.push({
-                  ...baseData,
-                  chemicalName:step.chemical,
-                  percentage: step.chemical,
-                  dosage: step.chemical,
-                 });
-                }
-                
+                });
               })
-            return tableData;
-    
-          }
-          console.log(tableData);
-          
-          setTableData(recipesDataForTable);
-        } else {
-          setError(data.message || "Error fetching recipe");
-        }
-      } catch (err) {
-        console.error("Error:", err);
-        setError("Error fetching recipe");
-      } finally {
-        setLoading(false);
-      }
-    };
+            } else {
+              tableData.push({
+                ...baseData,
+                chemicalName: step.chemical,
+                percentage: step.chemical,
+                dosage: step.chemical,
+              });
+            }
 
+          })
+          return tableData;
+
+        }
+        console.log(tableData);
+
+        setTableData(recipesDataForTable);
+      } else {
+        setError(data.message || "Error fetching recipe");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Error fetching recipe");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     const id = pathname?.split("/").pop();
-    if (id) {
-      fetchRecipe(id);
-      fetchChemicals(); // Fetch chemicals when recipe loads
+    if (checkFetchOnce()) {
+      if (id && id !== "upload-recipe") {
+        fetchRecipe(id);
+        fetchChemicals(); // Fetch chemicals when recipe loads
+      }
     }
   }, [pathname, form]);
 
@@ -605,7 +609,7 @@ const RecipeForm: React.FC = () => {
       <Modal title="Upload Excel" open={isModalOpen} onCancel={handleCancel} footer={null}>
         <UploadData
           setTableData={setTableData}
-          setChemicalOptions={(options: string[]) => 
+          setChemicalOptions={(options: string[]) =>
             setChemicalOptions(options.map(option => ({ name: option })))
           }
           setIsModalOpen={setIsModalOpen}

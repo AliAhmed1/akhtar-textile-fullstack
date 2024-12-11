@@ -1,85 +1,58 @@
 import { NextResponse } from 'next/server';
-import { Pool } from 'pg';
 import bcrypt from 'bcryptjs';
+import { prisma } from '@/lib/prisma';
 
-// Set up the connection pool for PostgreSQL
-const pool = new Pool({
-  connectionString: process.env.NEXT_PUBLIC_DATABASE_URL
-});
 
 export async function POST(request: Request) {
-  const client = await pool.connect();
-  
+
   try {
     // Parse the request body
-    const {
-      username, password, name, accesslevels, account, bank, cnic, 
-      code, department, designation, manager, phone
-    } = await request.json();
-
-    // Check if the user already exists
-    const existingUserResult = await client.query(
-      'SELECT * FROM users WHERE username = $1', [username]
-    );
-
-    if (existingUserResult.rows.length > 0) {
-      return NextResponse.json({ message: 'User already exists' }, { status: 400 });
+    const body = await request.json();
+    const {id, username, password, name, account, bank, cnic, code, department, designation, manager, phone, accesslevels } = body;
+  const access_levels = accesslevels;
+    delete body.accesslevels;
+    console.log('access_levels',access_levels);
+    console.log('body',body);
+    let hashedPassword = "";
+    if (password) {
+     hashedPassword = await bcrypt.hash(password, 10);
+     body.password = hashedPassword;
     }
+    console.log('hashedPassword',hashedPassword);
+    // Check if the user already exists
+    if(id){
+      await prisma.users.update({data:body,where:{id:BigInt(id)}});
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+        console.log("check1");
+        // notCommonAccessLevels.map(async (level: any) => {
+          await prisma.access_levels.deleteMany({where:{usersid:id}});
+        // })
+      // } 
 
-    // Create the new user
-    const insertUserQuery = `
-      INSERT INTO users (
-        username, password, name, account, bank, cnic, code,
-        department, designation, manager, phone
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-      RETURNING id, name, username, account, bank, cnic, code, department, designation, manager, phone
-    `;
+      access_levels.map(async (level: any) => {
+        const result = await prisma.access_levels.create({data:{usersid:id,accesslevels:level}});
+        console.log('result',result);
+      })
+      return NextResponse.json({ message: 'User updated successfully' }, { status: 201 });
+  }
+  console.log('check2');
+    delete body.id;
 
-    const values = [
-      username, hashedPassword, name, account, bank, cnic,
-      code, department, designation, manager, phone
-    ];
+    body.password = hashedPassword;
 
-    const newUserResult = await client.query(insertUserQuery, values);
-    const newUser = newUserResult.rows[0];
+    const newUserResult = await prisma.users.create({
+      data: body
+    });
+    const newUser = newUserResult;
     const userId = newUser.id;
    
-    const insertAccessLevelQuery = `
-      INSERT INTO access_levels (usersid, accesslevels) 
-      VALUES ($1, $2)
-      RETURNING id, usersid, accesslevels
-    `;
-
-    const accessLevelInsertPromises = accesslevels.map((level:any) => {
-      return client.query(insertAccessLevelQuery, [userId, level]);
+    const accessLevelInsertPromises = access_levels.map(async (level:any) => {
+      return await prisma.access_levels.create({ data: { usersid: userId, accesslevels: level } });
     });
 
-    // Wait for all insertions to complete
-    const newAccessLevelsResults = await Promise.all(accessLevelInsertPromises);
-    const newAccessLevels = newAccessLevelsResults.map(result => result.rows[0]);
-
-    return NextResponse.json({
-      id: newUser.id,
-      name: newUser.name,
-      username: newUser.username,
-      account: newUser.account,
-      bank: newUser.bank,
-      cnic: newUser.cnic,
-      code: newUser.code,
-      department: newUser.department,
-      designation: newUser.designation,
-      manager: newUser.manager,
-      phone: newUser.phone,
-      accessLevels: newAccessLevels // Return the new access levels created
-    }, { status: 201 });
-
+    return NextResponse.json({ message: 'User created successfully' }, { status: 201 });
   } catch (error) {
     console.error('Error creating user:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
-  } finally {
-    client.release(); // Release the client back to the pool
-  }
+  } 
 }
