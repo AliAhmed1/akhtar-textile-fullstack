@@ -1,4 +1,6 @@
 
+
+import { recipes } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 import { Client, types } from 'pg';
 
@@ -30,17 +32,16 @@ const client = new Client({
     console.log('recipes',recipes.length);
     // Split recipes into batches for processing
     // const BATCH_SIZE = 40;
-  
+    const successfulBatch: any[] = [];
     // Start transaction for all uploads
     await client.query('BEGIN');
   
     for (let i = 0; i < recipes.length; i += BatchSize) {
       let count = 0;
       const batch = recipes.slice(i, i + BatchSize);
-  const successfulBatch: any[] = [];
+
   // console.log("check",successfulBatch);
       const recipeValues: any[] = [];
-
       // Prepare values for recipe batch insert
       // console.log("check1",batch);
        const recipeQueryPart =
@@ -52,24 +53,26 @@ const client = new Client({
           recipe.fabric,
           recipe.recipe_no,
           String(recipe.Fno),
-          recipe.file_name
+          recipe.file_name,
+          "Y"
         );
-        return  `($${index * 7 + 1}, $${index * 7 + 2}, $${index * 7 + 3}, $${index * 7 + 4}, $${index * 7 + 5}, $${index * 7 + 6}, $${index * 7 + 7})`;
+        return  `($${index * 8 + 1}, $${index * 8 + 2}, $${index * 8 + 3}, $${index * 8 + 4}, $${index * 8 + 5}, $${index * 8 + 6}, $${index * 8 + 7}, $${index * 8 + 8})`;
       });
-
+console.log('recipeQueryPart:',recipeValues);
+console.log("batch:",batch)
       const recipeQuery = `
-        INSERT INTO recipes (Load_Size, Machine_Type, Finish, Fabric, Recipe, Fno, name)
+        INSERT INTO recipes (Load_Size, Machine_Type, Finish, Fabric, Recipe, Fno, name, active_flag)
         VALUES ${recipeQueryPart.join(', ')}
         ON CONFLICT (Recipe) DO NOTHING
         RETURNING id::text AS id, name, Recipe as recipe_no;
       `;
-
+      console.log('recipeQuery:',recipeQuery);
   const recipeIds:BigInt[] = [];
       // Insert recipes and collect the IDs
 
        const recipeResult= await client.query(recipeQuery, recipeValues);
       //  const {id, name, recipe_no}:IRecipeResult = recipeResult.rows[0];
-      // console.log('check1',recipeResult.rows);
+      console.log('check1',recipeResult.rows);
 
       recipeResult.rows.map((row) => {
         recipeIds.push(BigInt(row.id)),
@@ -89,7 +92,10 @@ const client = new Client({
     });
 
     console.log('check2',successfulBatch.length);
-
+    
+  //   const flagCheckPromise = successfulBatch.map((recipe) => {
+  //     return flagCheck(client,recipe);
+  //  })
       // Prepare to insert steps for all recipes
       const stepValues: any[] = [];
       const stepExpression: any[] = [];
@@ -113,20 +119,21 @@ if (successfulBatch.length > 0) {
         String(step.TDS),                // Keep TDS as a string
         String(step.TSS),                // Keep TSS as a string
         recipeIds[recipeIndex],          // Corresponding recipe ID
-        step.step_id
+        step.step_id,
+        step.modified_action
       );
   
       // Create the expression with correct indexed placeholders
-      const rowPlaceholders = `($${placeholderIndex}, $${placeholderIndex + 1}, $${placeholderIndex + 2}, $${placeholderIndex + 3}, $${placeholderIndex + 4}, $${placeholderIndex + 5}, $${placeholderIndex + 6}, $${placeholderIndex + 7}, $${placeholderIndex + 8}, $${placeholderIndex + 9}, $${placeholderIndex + 10}, $${placeholderIndex + 11})`;
+      const rowPlaceholders = `($${placeholderIndex}, $${placeholderIndex + 1}, $${placeholderIndex + 2}, $${placeholderIndex + 3}, $${placeholderIndex + 4}, $${placeholderIndex + 5}, $${placeholderIndex + 6}, $${placeholderIndex + 7}, $${placeholderIndex + 8}, $${placeholderIndex + 9}, $${placeholderIndex + 10}, $${placeholderIndex + 11}, $${placeholderIndex + 12})`;
     stepExpression.push(rowPlaceholders);
 
     // Increment the placeholder index by 10 for the next row
-    placeholderIndex += 12;
+    placeholderIndex += 13;
     });
   });
-  
+  console.log('check4',stepValues)
   // Construct the SQL query
-const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, centigrade, ph, lr, tds, tss, recipesid, step_id)
+const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, centigrade, ph, lr, tds, tss, recipesid, step_id, modified_action)
                    VALUES ${stepExpression.join(', ')} RETURNING id::text As id, step_no, recipesid:: text As recipesid, step_id;`;
   
 
@@ -172,15 +179,18 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
         }
       }
     });
+    
+    // await Promise.all(flagCheckPromise);
     }
     console.log(duplicates.length);
     console.log('success',successful);
+    
     // Commit transaction after all batches processed successfully
     await client.query('COMMIT');
   
 // console.log(successful);
 
-    return NextResponse.json({sucess: false, message: {duplicates,successful} },{ status: 200 })
+    return NextResponse.json({sucess: false, message: {duplicates,successful}, files: { successfulBatch } },{ status: 200 })
   } catch (error) {
     console.error('Error saving recipe data:', error);
     // Rollback transaction if error occurs
@@ -284,3 +294,34 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
 
     }
   };
+
+  // const flagCheck = async (client: any, recipe:any) => {
+  //   console.log("Check A",recipe.Fno);
+  //   const exist = await client.query('SELECT * FROM recipes WHERE fno = $1', [String(recipe.Fno)]);
+  //   console.log("Check B",exist.rows);
+  //   if(exist.rows.length > 0) {
+  //     for(let i = 0; i < exist.rows.length-1; i++) {
+  //       if(exist.rows[i].active_flag === "Y") {
+  //         // exist.rows[i].active_flag = "N";
+  //         const result = await client.query('UPDATE recipes SET active_flag = $1 WHERE id = $2', ["N", String(exist.rows[i].id)]);
+  //         console.log("Check C",result)
+  //       }
+  //   }
+  // }
+  // console.log("Check D");
+  //   // r.forEach(async (recipe: any) => {
+  //   //   console.log('check9')
+  //   //   const data = await client.query('SELECT * FROM recipes WHERE fno = $1', [String(recipe.Fno)]);
+  //   //   console.log('check10', data.rows)
+  //   //   if (data.rows.length > 0) {
+  //   //     data.rows.forEach((row: any) => {
+  //   //       console.log('check11',row.active_flag)
+  //   //       if(row.active_flag === "Y") {
+  //   //         row.active_flag = "N";
+  //   //     }});
+  //   //   // }
+  //   //     console.log('check11',data.rows[0].flag)
+  //   //     // recipe.flag = 1;
+  //   //   }
+  //   // });
+  // };
