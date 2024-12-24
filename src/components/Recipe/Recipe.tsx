@@ -100,6 +100,7 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
   };
   const [fileList, setFileList] = useState<string[]>([]);
 
+  
   const generateExcel = async (data: any) => {
     const bgcolourCondition = (recipeIndex: number,cell:any) => {
       if(recipeIndex % 2 === 1 ) {
@@ -199,7 +200,7 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
               fno: recipe.fno,
               fabric: recipe.fabric,
               wash: recipe.finish,
-              active_flag: 'Y',
+              active_flag: recipe.active_flag, 
               load_size: recipe.load_size,
               action: step.action,
               liters: step.liters,
@@ -213,6 +214,7 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
               step_no: step.step_no,
               chemical_name: chemical.chemical_name,
               dosage: chemical.dosage,
+              modified_action: step.modified_action
             });
             const dosage_percent = row.getCell(15).address
             const dosage = row.getCell(16).address
@@ -234,7 +236,7 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
              fno: recipe.fno,
              fabric: recipe.fabric,
              wash: recipe.finish,  
-             active_flag: 'Y',     
+             active_flag: recipe.active_flag,     
              load_size: recipe.load_size,
              action: step.action,
              liters: step.liters,
@@ -246,6 +248,7 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
              tss: step.tss,
              minutes: step.minutes,
              step_no: step.step_no,
+             modified_action: step.modified_action
            });
            bgcolourCondition(recipeIndex,row);
          }
@@ -412,7 +415,14 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
       const reponse = await axios.post('/api/saveBulkRecipes/', { fileDataArray, BatchSize }, {
         headers: { 'Content-Type': 'application/json' },
       });
-      // console.log(reponse)
+      const data = reponse.data.files;
+
+      console.log(data);
+      if(data.successfulBatch.length > 0) {
+      const message = await axios.post(`/api/checkActiveFlag/`, { data }, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
       setIsModalOpen(false);
       // Collect successful file names for this batch
       reponse.data.message.duplicates ? reponse.data.message.duplicates.forEach((duplicate: any) => duplicates.push(duplicate)) : null;

@@ -23,7 +23,7 @@ model chemical_association {
   chemicalid BigInt?
   percentage Float?
   dosage     Float?
-  chemicals   chemicals? @relation(fields: [chemicalid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chemical")
+  chemicals  chemicals? @relation(fields: [chemicalid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_chemical")
   steps      steps?     @relation(fields: [stepid], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_step")
 }
 
@@ -60,6 +60,7 @@ model recipes {
   recipe       BigInt?  @unique(map: "unique_recipe_name")
   fno          String?  @db.String(255)
   name         String?  @db.String(255)
+  active_flag  String?  @db.String(255)
   steps        steps[]
 }
 
@@ -78,6 +79,7 @@ model steps {
   step_no              String?                @db.String(255)
   minutes              String?                @db.String(255)
   step_id              BigInt
+  modified_action      String?                @db.String(255)
   chemical_association chemical_association[]
   recipes              recipes?               @relation(fields: [recipesid], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_stept_table")
 }
