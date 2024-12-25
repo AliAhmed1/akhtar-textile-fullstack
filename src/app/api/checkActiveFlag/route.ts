@@ -32,7 +32,7 @@ console.log("Check B.1: ",exist);
   console.log("Check D");
     });
     }
-    return NextResponse.json({success: "Success"},{
+    return NextResponse.json({success: true},{
         status: 200});
 }
 // const flagCheck = async (client: any, recipe:any) => {
