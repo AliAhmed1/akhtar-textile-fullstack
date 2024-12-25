@@ -434,7 +434,19 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
 
     }
   }
+let checkActiveFlag = async (data: any) => {
+  try {
+    const response = await axios.post("/api/checkActiveFlag/", { data }, {
+      headers: { "Content-Type": "application/json" },
+    });
+    
+    console.log("Active Flag Check Response:", response.data);
+    return response;
+  } catch (error) {
+    console.error("Error in Active Flag API call:", error);
+  }
 
+}
   let saveFailedUploads = async (fileDataArray: any) => {
 
     try {
@@ -451,7 +463,7 @@ const handleSubmit = (): FileList | null => {
   console.log("handleFiles");
 
   if (fileInputRef.current && fileInputRef.current.files) {
-    handleUpload(fileInputRef.current.files, 30);
+    handleUpload(fileInputRef.current.files, 25);
     return fileInputRef.current.files;
   }
 
@@ -499,17 +511,15 @@ for (let i = 0; i < batch.length; i++) {
         // Handle successful recipes
         if (uploadResponse.data.recipes) {
           let result = await saveBulkRecipes(uploadResponse.data.recipes, BatchSize, successNames, duplicates);
+        
           let data = result && result.data.files;
                 // console.log(res);
-      try{
+      console.log(result);
       if(data.successfulBatch.length > 0) {
-      const message = await axios.post(`/api/checkActiveFlag/`, { data }, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-  }catch (error) {
-    console.error('Error uploading or saving files:', error);
-  }
+       const flag =await checkActiveFlag(data);
+       console.log("Flag Response", flag);
+}
+
           console.log("Result", result);
           uploadedFiles += batch.length;
           setNumberOfUploads(uploadedFiles);
@@ -526,6 +536,7 @@ for (let i = 0; i < batch.length; i++) {
     for (let i = 0; i < filesArray.length; i += BatchSize) {
       const batch = filesArray.slice(i, i + BatchSize); // Get a batch of 40 files
       await processBatch(batch); // Wait for batch to process
+
       console.log(`Processed batch: ${Math.ceil((i + 1) / BatchSize)}`);
     }
     duplicates.length > 0 ? message.error(`${duplicates.length} files are duplicate`) : null
