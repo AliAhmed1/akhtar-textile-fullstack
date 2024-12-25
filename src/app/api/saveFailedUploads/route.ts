@@ -1,4 +1,4 @@
-import recipe from '@/app/(auth)/recipe/page';
+// import recipe from '@/app/(auth)/recipe/page';
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 

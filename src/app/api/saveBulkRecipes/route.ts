@@ -20,16 +20,16 @@ const client = new Client({
   let failed: any[] = [];
   let duplicates: any[] = [];
   let successful: any[] = []; 
-  console.log('request',request);
+  // console.log('request',request);
   try {
     client.connect();
     // Parse the JSON body
     const {fileDataArray, BatchSize} = await request.json();
-    console.log('batchSize',BatchSize);
-    console.log('fileDataArray',fileDataArray);
+    // console.log('batchSize',BatchSize);
+    // console.log('fileDataArray',fileDataArray);
     // Check if fileDataArray is an array (multiple recipes) or a single object (one recipe)
     const recipes = Array.isArray(fileDataArray) ? fileDataArray : [fileDataArray];
-    console.log('recipes',recipes.length);
+    // console.log('recipes',recipes.length);
     // Split recipes into batches for processing
     // const BATCH_SIZE = 40;
     const successfulBatch: any[] = [];
@@ -58,28 +58,28 @@ const client = new Client({
         );
         return  `($${index * 8 + 1}, $${index * 8 + 2}, $${index * 8 + 3}, $${index * 8 + 4}, $${index * 8 + 5}, $${index * 8 + 6}, $${index * 8 + 7}, $${index * 8 + 8})`;
       });
-console.log('recipeQueryPart:',recipeValues);
-console.log("batch:",batch)
+// console.log('recipeQueryPart:',recipeValues);
+// console.log("batch:",batch)
       const recipeQuery = `
         INSERT INTO recipes (Load_Size, Machine_Type, Finish, Fabric, Recipe, Fno, name, active_flag)
         VALUES ${recipeQueryPart.join(', ')}
         ON CONFLICT (Recipe) DO NOTHING
         RETURNING id::text AS id, name, Recipe as recipe_no;
       `;
-      console.log('recipeQuery:',recipeQuery);
+      // console.log('recipeQuery:',recipeQuery);
   const recipeIds:BigInt[] = [];
       // Insert recipes and collect the IDs
 
        const recipeResult= await client.query(recipeQuery, recipeValues);
       //  const {id, name, recipe_no}:IRecipeResult = recipeResult.rows[0];
-      console.log('check1',recipeResult.rows);
+      // console.log('check1',recipeResult.rows);
 
       recipeResult.rows.map((row) => {
         recipeIds.push(BigInt(row.id)),
         successful.push(row.name)
       });
 
-      console.log('recipe',recipeIds.length);
+      // console.log('recipe',recipeIds.length);
       recipeResult.rows.forEach((row) =>{
     batch.forEach((recipe) => {
               if (row.name  === recipe.file_name) {
@@ -91,7 +91,7 @@ console.log("batch:",batch)
       });
     });
 
-    console.log('check2',successfulBatch.length);
+    // console.log('check2',successfulBatch.length);
     
   //   const flagCheckPromise = successfulBatch.map((recipe) => {
   //     return flagCheck(client,recipe);
@@ -131,7 +131,7 @@ if (successfulBatch.length > 0) {
     placeholderIndex += 13;
     });
   });
-  console.log('check4',stepValues)
+  // console.log('check4',stepValues)
   // Construct the SQL query
 const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, centigrade, ph, lr, tds, tss, recipesid, step_id, modified_action)
                    VALUES ${stepExpression.join(', ')} RETURNING id::text As id, step_no, recipesid:: text As recipesid, step_id;`;
@@ -148,13 +148,13 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
 
 
     
-  console.log('check4.5')
+  // console.log('check4.5')
 // console.log(stepResult.rows.filter((step) => step.recipesid === null));
       // Collect all chemicals to insert concurrently
       const chemicalPromises = successfulBatch?.map((recipe, recipeIndex) => {
         // console.log(step.recipesid)
         const recipesSteps = stepResult.rows.filter((step) => BigInt(step.recipesid) === recipeIds[recipeIndex]);
-        console.log('filename',recipe.file_name);
+        // console.log('filename',recipe.file_name);
         return insertChemicalsInBatch(recipe.step, recipesSteps, client, recipe);
       });
       
@@ -182,8 +182,8 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
     
     // await Promise.all(flagCheckPromise);
     }
-    console.log(duplicates.length);
-    console.log('success',successful);
+    // console.log(duplicates.length);
+    // console.log('success',successful);
     
     // Commit transaction after all batches processed successfully
     await client.query('COMMIT');
@@ -208,7 +208,7 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
     const placeholders:any[] = [];
     const placeholderWithBrackets:any[] = [];
     let placeholderIndex = 0;
-  console.log('check5')
+  // console.log('check5')
     steps.forEach((step) => {
       // console.log(step.chemicals)
       if (step.chemicals && step.chemicals.length > 0) {
@@ -221,7 +221,7 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
         });
       }
     });
-  console.log('check5.5')
+  // console.log('check5.5')
     // Insert chemicals if they exist
     if (chemicalInsertData.length > 0) {
 
@@ -238,7 +238,7 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
           SELECT id:: text as id, name FROM chemicals WHERE name IN (${placeholders.join(', ')});
         `;
 
-      console.log('check6')
+      // console.log('check6')
       // console.log(placeholders);
       // console.log(chemicalInsertData);
       // console.log('chemicalQuery',chemicalQuery)
@@ -250,17 +250,17 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
       let placeholderIndex = 1
       // console.log('steps',steps);
       steps.forEach((step) => {
-        console.log('step check')
+        // console.log('step check')
         stepResult.forEach((stepResult:any) =>{
           // console.log('step result check',stepResult)
         if(step.step_id ===  Number(stepResult.step_id)) {   /// work needs to be done not populating
           step.chemicals?.forEach((chemical: any, index: number) => {
-            console.log('check');
+            // console.log('check');
             chemicalIdsResult.rows.forEach((chemicalResult:any, index:number) => {
               // console.log('check6.5',chemicalResult.name)
               // console.log('check6.6',chemical.recipe_name)
               if(chemical.recipe_name === chemicalResult.name) {
-                console.log(chemical.dosage === "None"?chemical.dosage:null)
+                // console.log(chemical.dosage === "None"?chemical.dosage:null)
                 chemicalAssocInsertData.push(
                   BigInt(stepResult.id), // Use the recipe ID for association
                   BigInt(chemicalResult.id), // Assuming name is the chemical ID, else map properly
@@ -281,47 +281,16 @@ const stepQuery = `INSERT INTO steps (step_no, action, minutes, liters, rpm, cen
 
       
 
-  console.log('check7',chemicalAssocInsertData);
-  console.log('filename', recipe.file_name);
+  // console.log('check7',chemicalAssocInsertData);
+  // console.log('filename', recipe.file_name);
       // Prepare chemical association query
       if (chemicalAssocInsertData.length > 0) {
         const chemicalAssocQuery = `INSERT INTO chemical_association (stepid, chemicalid, percentage, dosage) 
                                      VALUES ${stepExpression.join(', ')};`;
-        console.log(chemicalAssocQuery);
+        // console.log(chemicalAssocQuery);
         await client.query(chemicalAssocQuery, chemicalAssocInsertData);
-        console.log('check8');
+        // console.log('check8');
       }
 
     }
   };
-
-  // const flagCheck = async (client: any, recipe:any) => {
-  //   console.log("Check A",recipe.Fno);
-  //   const exist = await client.query('SELECT * FROM recipes WHERE fno = $1', [String(recipe.Fno)]);
-  //   console.log("Check B",exist.rows);
-  //   if(exist.rows.length > 0) {
-  //     for(let i = 0; i < exist.rows.length-1; i++) {
-  //       if(exist.rows[i].active_flag === "Y") {
-  //         // exist.rows[i].active_flag = "N";
-  //         const result = await client.query('UPDATE recipes SET active_flag = $1 WHERE id = $2', ["N", String(exist.rows[i].id)]);
-  //         console.log("Check C",result)
-  //       }
-  //   }
-  // }
-  // console.log("Check D");
-  //   // r.forEach(async (recipe: any) => {
-  //   //   console.log('check9')
-  //   //   const data = await client.query('SELECT * FROM recipes WHERE fno = $1', [String(recipe.Fno)]);
-  //   //   console.log('check10', data.rows)
-  //   //   if (data.rows.length > 0) {
-  //   //     data.rows.forEach((row: any) => {
-  //   //       console.log('check11',row.active_flag)
-  //   //       if(row.active_flag === "Y") {
-  //   //         row.active_flag = "N";
-  //   //     }});
-  //   //   // }
-  //   //     console.log('check11',data.rows[0].flag)
-  //   //     // recipe.flag = 1;
-  //   //   }
-  //   // });
-  // };

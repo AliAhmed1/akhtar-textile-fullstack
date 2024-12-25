@@ -3,16 +3,17 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
+  try{
     const { data } = await request.json();
-    console.log("Check A ",data);
-    console.log("Check A.1 ",data.successfulBatch.length);
+    // console.log("Check A ",data);
+    // console.log("Check A.1 ",data.successfulBatch.length);
     if(data.successfulBatch.length > 0) {
      data.successfulBatch.forEach(async (file: any) => {
         const exist = await prisma.recipes.findMany({ where: { fno: String(file.Fno) } });
         exist.pop();
-    console.log("Check B ",exist);
+    // console.log("Check B ",exist);
     if(exist.length > 0) {
-console.log("Check B.1: ",exist);
+// console.log("Check B.1: ",exist);
           const result = await prisma.recipes.updateMany({
             where: {
               id: {
@@ -25,16 +26,20 @@ console.log("Check B.1: ",exist);
           });
           
         //   const result = await client.query('UPDATE recipes SET active_flag = $1 WHERE id = $2', ["N", String(exist.[i].id)]);
-          console.log("Check C ",result)
+          // console.log("Check C ",result)
     //     }
     // }
   }
-  console.log("Check D");
+  // console.log("Check D");
     });
     }
-    return NextResponse.json({success: true},{
-        status: 200});
+    return NextResponse.json({success: true, message: "Success"},{ status: 200 });
+  }catch (error) {
+    console.error('Error deleting all recipes:', error);
+    return NextResponse.json({ success: false, message: 'Failed to delete all recipes' }, { status: 500 });
+  }
 }
+
 // const flagCheck = async (client: any, recipe:any) => {
 //     console.log("Check A",recipe.Fno);
 //     const exist = await client.query('SELECT * FROM recipes WHERE fno = $1', [String(recipe.Fno)]);

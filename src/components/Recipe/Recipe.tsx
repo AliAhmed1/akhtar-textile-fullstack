@@ -417,12 +417,12 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
       });
       const data = reponse.data.files;
 
-      console.log(data);
-      if(data.successfulBatch.length > 0) {
-      const message = await axios.post(`/api/checkActiveFlag/`, { data }, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
+    //   console.log(data);
+    //   if(data.successfulBatch.length > 0) {
+    //   const message = await axios.post(`/api/checkActiveFlag/`, { data }, {
+    //     headers: { 'Content-Type': 'application/json' },
+    //   });
+    // }
       setIsModalOpen(false);
       // Collect successful file names for this batch
       reponse.data.message.duplicates ? reponse.data.message.duplicates.forEach((duplicate: any) => duplicates.push(duplicate)) : null;
@@ -432,12 +432,7 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
     } catch (error) {
       console.error('Error uploading or saving files:', error);
 
-    } finally {
-      // Show page elements after processing is done
-      setShowPageElements(true);
-
     }
-
   }
 
   let saveFailedUploads = async (fileDataArray: any) => {
@@ -503,7 +498,19 @@ for (let i = 0; i < batch.length; i++) {
 
         // Handle successful recipes
         if (uploadResponse.data.recipes) {
-          await saveBulkRecipes(uploadResponse.data.recipes, BatchSize, successNames, duplicates);
+          let result = await saveBulkRecipes(uploadResponse.data.recipes, BatchSize, successNames, duplicates);
+          let data = result && result.data.files;
+                // console.log(res);
+      try{
+      if(data.successfulBatch.length > 0) {
+      const message = await axios.post(`/api/checkActiveFlag/`, { data }, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+  }catch (error) {
+    console.error('Error uploading or saving files:', error);
+  }
+          console.log("Result", result);
           uploadedFiles += batch.length;
           setNumberOfUploads(uploadedFiles);
         }
