@@ -436,7 +436,7 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
   }
 let checkActiveFlag = async (data: any) => {
   try {
-    const response = await axios.post("/api/checkActiveFlag/", { data }, {
+    const response = await axios.put("/api/checkActiveFlag/", { data }, {
       headers: { "Content-Type": "application/json" },
     });
     
