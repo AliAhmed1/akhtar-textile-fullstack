@@ -15,11 +15,11 @@ interface Chemical {
   id: string | null | undefined;
   name: string;
   full_name: string | null;
-  cost_per_kg: number | null;
-  kg_per_can: number | null;
-  cost_per_unit: number | null;
-  cost_uom: string | null;
-  type_and_use: string | null;
+  free: number | null;
+  on_order: number | null;
+  total: number | null;
+  order: string | null;
+  boxes: string | null;
   unit_used: string | null;
   unit_conversion: number | null;
 }
@@ -68,18 +68,7 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
 
   const HandleEdit = (chemical: Chemical) => {
     console.log("chemical",chemical)
-    form.setFieldsValue({
-      id: chemical.id,
-         name: chemical.name,
-      full_name: chemical.full_name,
-      costPerKg: chemical.cost_per_kg,
-      kgPerCan: chemical.kg_per_can,
-      costPerUnit: chemical.cost_per_unit,
-      costUom: chemical.cost_uom,
-      typeAndUse: chemical.type_and_use,
-      unitUsed: chemical.unit_used,
-      unitConversion: chemical.unit_conversion
-    });
+    form.setFieldsValue(chemical);
     console.log("form",form)
     showModal(1);
   }
@@ -103,7 +92,7 @@ const Chemicals: React.FC<ChemicalFormProps> = ({ chemicalData }) => {
       const response = await axios.post('http://127.0.0.1:8001/upload-chemicals', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-console.log(response.data.error);
+console.log("response: ",response.data);
 if(response.data.status === "200") {
   
 }
@@ -173,11 +162,11 @@ if(response.data.status === "200") {
             <tr>
               <th className="w-1/9 px-4 text-left text-xs text-black">Washing Name</th>
               <th className="w-1/9 text-left text-xs text-black">Full Name</th>
-              <th className="w-1/9 text-left text-xs text-black">Cost/KG</th>
-              <th className="w-1/9 py-3 text-left text-xs text-black">KG/Can</th>
-              <th className="w-1/9 py-3 text-left text-xs text-black">Cost/Unit Of Usage</th>
-              <th className="w-1/9 py-3 text-left text-xs text-black">Cost/UOM</th>
-              <th className="w-1/9 py-3 text-left text-xs text-black">Type & Use</th>
+              <th className="w-1/9 text-left text-xs text-black">Free</th>
+              <th className="w-1/9 py-3 text-left text-xs text-black">On Order</th>
+              <th className="w-1/9 py-3 text-left text-xs text-black">Total</th>
+              <th className="w-1/9 py-3  text-xs text-black">Order</th>
+              <th className="w-1/9 py-3 text-left text-xs text-black">Boxes</th>
               <th className="w-1/9 py-3 text-left text-xs text-black">Unit Used</th>
               <th className="w-1/9 py-3 text-left text-xs text-black">Unit Conversion</th>
             </tr>
@@ -185,15 +174,15 @@ if(response.data.status === "200") {
           <tbody className="bg-white divide-y divide-gray-200">
             {chemicals.map((chemical: Chemical, index: number) => (
               <tr key={chemical.id || index} className="hover:bg-purple-50 transition duration-200" onClick={() => HandleEdit(chemical)}>
-                <td className="px-6 py-4"><span className='text-[#797FE7]'>{chemical.name}</span></td>
-                <td className="px-3 py-4"><span className='text-[#797FE7]'>{chemical.full_name}</span></td>
-                <td className="px-3 py-4 text-center"><span className='text-[#797FE7]'>{chemical.cost_per_kg}</span></td>
-                <td className="px-3 py-4 text-center"><span className='text-[#797FE7]'>{chemical.kg_per_can}</span></td>
-                <td className="px-3 py-4 text-center"><span className='text-[#797FE7]'>{chemical.cost_per_unit}</span></td>
-                <td className="px-3 py-4 text-center"><span className='text-[#797FE7]'>{chemical.cost_uom}</span></td>
-                <td className="px-3 py-4"><span className='text-[#797FE7]'>{chemical.type_and_use}</span></td>
-                <td className="px-3 py-4 text-center"><span className='text-[#797FE7]'>{chemical.unit_used}</span></td>
-                <td className="px-3 py-4 text-center"><span className='text-[#797FE7]'>{chemical.unit_conversion}</span></td>
+                <td className="px-4 py-4"><span className='text-[#797FE7]'>{chemical.name}</span></td>
+                <td className="px-1 py-4"><span className='text-[#797FE7]'>{chemical.full_name}</span></td>
+                <td className="px-1 py-4"><span className='text-[#797FE7]'>{chemical.free}</span></td>
+                <td className="px-1 py-4 text-center"><span className='text-[#797FE7]'>{chemical.on_order}</span></td>
+                <td className="px py-4 text-center"><span className='text-[#797FE7]'>{chemical.total}</span></td>
+                <td className="px-1 py-4 text-center">{chemical.order?.charAt(0)==="-"? <span className='text-[#f95b69]'>{chemical.order}</span>:<span className='text-[#797FE7]'>{chemical.order}</span>}</td>
+                <td className="px-1 py-4"><span className='text-[#797FE7]'>{chemical.boxes}</span></td>
+                <td className="px-1 py-4 text-center"><span className='text-[#797FE7]'>{chemical.unit_used}</span></td>
+                <td className="px-1 py-4 text-center"><span className='text-[#797FE7]'>{chemical.unit_conversion}</span></td>
               </tr>
             ))}
           </tbody>

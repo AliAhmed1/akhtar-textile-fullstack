@@ -178,23 +178,23 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
       });
   
       // Process Rows
-      recipesResult.forEach((recipe: any, recipeIndex: number) => {
-        const recipeSteps = stepsResult.filter((step: any) => step.recipesid === recipe.id);
+      recipesResult.rows.forEach((recipe: any, recipeIndex: number) => {
+        const recipeSteps = stepsResult.rows.filter((step: any) => step.recipesid === recipe.id);
         let firstStepRow = worksheet.lastRow ? worksheet.lastRow.number + 1 : 1;
         recipeSteps.forEach((step: any) => {
-          const stepChemicals = chemicalsAssocResult
+          const stepChemicals = chemicalsAssocResult.rows
             .filter((assoc: any) => assoc.stepid === step.id)
             .map((assoc: any) => {
-              const chemical = chemicalsResult.find((chem: any) => chem.id === assoc.chemicalid);
+              const chemical = chemicalsResult.rows.find((chem: any) => chem.id === assoc.chemicalid);
               return {
-                chemical_name: chemical ? chemical.name : 'Unknown',
-                dosage_percent: assoc.percentage || 'Unknown',
-                dosage: assoc.dosage || 'Unknown',
+                chemical_name: chemical ? chemical.name : "",
+                dosage_percent: assoc.percentage ,
+                dosage: assoc.dosage ,
               };
             });
             let row :any ;
           stepChemicals.forEach((chemical: any) => {
-
+            console.log("dosage: ",chemical.dosage)
             row = worksheet.addRow({
               recipe_number: recipe.recipe,
               fno: recipe.fno,
@@ -218,7 +218,9 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
             });
             const dosage_percent = row.getCell(15).address
             const dosage = row.getCell(16).address
-            worksheet.getCell(`${dosage_percent}`).value = { formula: `${dosage}/140000*100` };
+            const load_size = Number(row.getCell(6).value) * 1000
+            console.log("load_size:  ",load_size, typeof(row.getCell(6).value) );
+            worksheet.getCell(`${dosage_percent}`).value = { formula: `${dosage}/${load_size}*100` };
             bgcolourCondition(recipeIndex,row);
             // Add alternating row background
             // const isEvenRow = row.number % 2 === 0;
@@ -326,8 +328,8 @@ const [NumberOfUploads, setNumberOfUploads] = useState<number>(0);
         responseType: 'json',
       });
       const data = responseResult.data.files;
-      console.log(data.recipesResult);
-      await generateExcel(data)
+      console.log("data",data);
+      await generateExcel(data)      // commented for testing
       // const response = await axios.post('/api/exportRecipes', { data },
       //   {
       //     headers: { 'Content-Type': 'application/json' },

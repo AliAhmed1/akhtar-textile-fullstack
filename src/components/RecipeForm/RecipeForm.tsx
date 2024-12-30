@@ -295,7 +295,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, use } from "react";
 import { Modal, Form, Input, InputNumber, Select, Row, Col, Button, Table, Spin } from "antd";
 import { ColumnsType } from "antd/es/table";
 import UploadData from "@/components/UploadData/uploadData";
@@ -303,6 +303,7 @@ import SaveData from "@/components/SaveData/saveData";
 import { usePathname } from "next/navigation";
 import { LoadingOutlined } from "@ant-design/icons";
 import useCheckFetchOnce from "@/utils/useCheckFetchOnce";
+import RunRecipe from "../RunRecipe/RunRecipe";
 
 const { Option } = Select;
 
@@ -523,7 +524,12 @@ const RecipeForm: React.FC = () => {
         fetchChemicals(); // Fetch chemicals when recipe loads
       }
     }
+
   }, [pathname, form]);
+
+  useEffect(() => {
+    console.log("form:", form.getFieldValue("recipe"));
+  }, [tableData]);
 
   if (loading) {
     return (
@@ -589,7 +595,10 @@ const RecipeForm: React.FC = () => {
           </Row>
         </Form>
         <br />
+        <div style={{ display: "flex", gap: "72%"}}>
         <SaveData form={form} tableData={tableData} recipe1={recipe1} />
+        <RunRecipe tableData={tableData} form={form} />
+        </div>
       </div>
       <br />
       <div style={{ backgroundColor: "#f5f5f5" }}>
