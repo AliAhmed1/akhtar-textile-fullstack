@@ -1,4 +1,5 @@
 // SaveData.tsx
+"use client";
 import React from 'react';
 import { Button, message } from 'antd';
 import axios from 'axios';
@@ -11,29 +12,30 @@ interface SaveDataProps {
 
 const SaveData: React.FC<SaveDataProps> = ({ form, tableData, recipe1 }) => {
   const saveRecipe = async () => {
-
+    console.log('check');
     try {
-
+      console.log('Recipe');
       const values = form.getFieldsValue();
+      console.log(values);
+      console.log(tableData);
+      const stepsObj = [];
       const recipeData = {
-        fileName: recipe1.file_name,
-        steps: tableData.map((step) => {
-          const chemicals = step.chemicalName.map((name: string, index: number) => ({
-            recipe_name: name,
-            percentage: step.percentage[index],
-            dosage: step.dosage[index],
-          }));
+        ...values,
+        steps: tableData
+        // steps: tableData.map((step, index) => {
+        //   if(step.step === tableData[index+1].step){
 
-          return {
-            step_no: step.step,
-            action: step.action,
-            minutes: step.minutes,
-            litres: step.liters,
-            rpm: step.rpm,
-            chemicals: chemicals,
-            temperature: step.centigrade,
-          };
-        }),
+        //     stepsObj.push({
+        //       step_no: step.step,
+        //     action: step.action,
+        //     minutes: step.minutes,
+        //     litres: step.liters,
+        //     rpm: step.rpm,
+        //     // chemicals: chemicals,
+        //     temperature: step.centigrade
+        //     });
+        //   }
+        // })
       };
 
       console.log('Recipe Data to be sent:', recipeData);

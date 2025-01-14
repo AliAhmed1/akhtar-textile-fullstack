@@ -65,22 +65,22 @@ console.log('response',response);
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Cost/KG" name="costPerKg" initialValue={0}>
+    <Form.Item label="Cost/KG" name="cost_per_kg" initialValue={0}>
       <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="KG/Can" name="kgPerCan" initialValue={0}>
+    <Form.Item label="KG/Can" name="kg_per_can" initialValue={0}>
       <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Cost/Unit Of Usage" name="costPerUnit" initialValue={0}>
+    <Form.Item label="Cost/Unit Of Usage" name="cost_per_unit" initialValue={0}>
       <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Cost/UOM" name="costUom" initialValue={''}>
+    <Form.Item label="Cost/UOM" name="cost_uom" initialValue={''}>
       <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
@@ -89,23 +89,59 @@ console.log('response',response);
 <Row gutter={16}>
  
   <Col xs={24} md={8}>
-    <Form.Item label="Type & Use" name="typeAndUse" initialValue={''}>
+    <Form.Item label="Type & Use" name="type_and_use" initialValue={''}>
     <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Unit Used" name="unitUsed" initialValue={''}>
+    <Form.Item label="Unit Used" name="unit_used" initialValue={''}>
       <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
   <Col xs={24} md={8}>
-    <Form.Item label="Unit Conversion" name="unitConversion" initialValue={0}>
+    <Form.Item label="Unit Conversion" name="unit_conversion" initialValue={0}>
       <Input style={{ width: '100%' }}/>
     </Form.Item>
   </Col>
 </Row>
 
-
+<Row gutter={16}>
+<Col xs={24} md={8}>
+    <Form.Item label="Free" name="free" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
+    </Form.Item>
+  </Col>
+  <Col xs={24} md={8}>
+    <Form.Item label="On Order" name="on_order" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
+    </Form.Item>
+  </Col>
+  <Col xs={24} md={8}>
+    <Form.Item label="Total" name="total" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
+    </Form.Item>
+  </Col>
+  <Col xs={24} md={8}>
+    <Form.Item label="Requirement" name="requirement" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
+    </Form.Item>
+  </Col>
+  <Col xs={24} md={8}>
+    <Form.Item label="Order" name="order" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
+    </Form.Item>
+  </Col>
+  <Col xs={24} md={8}>
+    <Form.Item label="Boxes" name="boxes" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
+    </Form.Item>
+  </Col>
+  <Col xs={24} md={8}>
+    <Form.Item label="Cost" name="cost" initialValue={0}>
+      <Input style={{ width: '100%' }}/>
+    </Form.Item>
+  </Col>
+ </Row>
 
       <Button
         type="primary"

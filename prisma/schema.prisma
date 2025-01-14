@@ -32,13 +32,20 @@ model chemicals {
   created_at           DateTime               @default(now()) @db.Timestamp(6)
   name                 String?                @unique(map: "unique_chemical_name") @db.String(255)
   kg_per_can           BigInt?
-  cost_uom             String?                @db.String(50)
   type_and_use         String?                @db.String(255)
   cost_per_unit        Decimal?               @db.Decimal(10, 2)
   unit_used            String?                @db.String(255)
   unit_conversion      Decimal?               @db.Decimal(10, 2)
   cost_per_kg          Decimal?               @db.Decimal(10, 2)
   full_name            String?                @db.String(255)
+  free                 Decimal?               @db.Decimal(10, 2)
+  on_order             Decimal?               @db.Decimal(10, 2)
+  total                Decimal?               @db.Decimal(10, 2)
+  requirement          Decimal?               @db.Decimal(10, 2)
+  order                Decimal?               @db.Decimal(10, 2)
+  boxes                Float?
+  cost                 Decimal?               @db.Decimal(10, 2)
+  cost_uom             Decimal?               @db.Decimal(10, 2)
   chemical_association chemical_association[]
 }
 
@@ -51,16 +58,17 @@ model history {
 }
 
 model recipes {
-  id           BigInt   @id(map: "recipe_pkey") @default(autoincrement())
-  created_at   DateTime @default(now()) @db.Timestamp(6)
+  id           BigInt       @id(map: "recipe_pkey") @default(autoincrement())
+  created_at   DateTime     @default(now()) @db.Timestamp(6)
   load_size    BigInt?
-  machine_type String?  @db.String(255)
-  finish       String?  @db.String(255)
-  fabric       String?  @db.String(255)
-  recipe       BigInt?  @unique(map: "unique_recipe_name")
-  fno          String?  @db.String(255)
-  name         String?  @db.String(255)
-  active_flag  String?  @db.String(255)
+  machine_type String?      @db.String(255)
+  finish       String?      @db.String(255)
+  fabric       String?      @db.String(255)
+  recipe       BigInt?      @unique(map: "unique_recipe_name")
+  fno          String?      @db.String(255)
+  name         String?      @db.String(255)
+  active_flag  String?      @db.String(255)
+  recipe_log   recipe_log[]
   steps        steps[]
 }
 
@@ -102,4 +110,15 @@ model users {
   updatedby     String?         @db.String(255)
   access_levels access_levels[]
   history       history[]
+  recipe_log    recipe_log[]
+}
+
+model recipe_log {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  status     String?  @db.String(255)
+  recipeid   BigInt?
+  userid     BigInt?
+  recipes    recipes? @relation(fields: [recipeid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_recipe")
+  users      users?   @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user")
 }

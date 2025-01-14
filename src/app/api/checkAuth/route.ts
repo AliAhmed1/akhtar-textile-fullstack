@@ -5,6 +5,7 @@ const secretKey = process.env.NEXT_PUBLIC_JWT_SECRET || "";
 
 export async function GET(req: NextRequest) {
   const token = req.cookies.get('token')?.value;
+ 
   if (!token) {
     return NextResponse.json({ authenticated: false }, { status: 401 });
   }
