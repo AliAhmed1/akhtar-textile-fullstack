@@ -55,6 +55,7 @@ export async function POST(request: Request) {
       if(body.id){
      const existingChemicalResult = await prisma.chemicals.findUnique({where:{id:BigInt(body.id)}});
 console.log('existingChemicalResult',existingChemicalResult);
+console.log('body',body);
     if (existingChemicalResult) {
       await prisma.chemicals.update({
         where: { id: existingChemicalResult.id },

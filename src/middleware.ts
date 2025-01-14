@@ -24,6 +24,7 @@ const pageMiddleware = async (request: NextRequest) => {
     const response = NextResponse.next();
     if (cachedData.userId) {
       response.headers.set('x-user-id', cachedData.userId);
+      // console.log("userData",response.headers.get('x-user-id'));
     }
     return response;
   }
@@ -54,7 +55,7 @@ const pageMiddleware = async (request: NextRequest) => {
   
   // Cache the user ID for future requests
   cache.set(token, { userId: userData.id });
-
+  
   // Create a response and set user ID in the header
   const response = NextResponse.next();
   response.headers.set('x-user-id', userData.id);

@@ -3,22 +3,33 @@ import React from 'react';
 import { Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import { usePathname } from 'next/navigation';
 
 interface UploadDataProps {
   setTableData: (data: any) => void;
-  setChemicalOptions: (options: string[]) => void;
+  // setChemicalOptions: (options: string[]) => void;
   setIsModalOpen: (open: boolean) => void;
   form: any;
   setRecipe1: (recipe: any) => void;
+  logData: any;
 }
 
-const UploadData: React.FC<UploadDataProps> = ({ setTableData, setChemicalOptions, setIsModalOpen, form, setRecipe1 }) => {
+const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, form, setRecipe1, logData }) => {
+  let pathname = usePathname();
   const handleUpload = async (file: File) => {
+    form.resetFields()
+    logData = {};
+    
+    const updatedpath = pathname?.split("/").slice(0, -1).join("/");
+    pathname = updatedpath;
+    console.log("pathname",updatedpath);
+    console.log("logData",logData);
+    
     const formData = new FormData();
     formData.append('files', file);
 
     try {
-      const response = await axios.post('https://huge-godiva-arsalan-3b36a0a1.koyeb.app/uploadfile/', formData, {
+      const response = await axios.post('https://curious-fancy-hailtechnologies-e2fde36f.koyeb.app/uploadfile/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       console.log("ABC")
@@ -66,15 +77,15 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setChemicalOption
       console.log(recipesDataForTable);
       setTableData(recipesDataForTable);
       form.setFieldsValue({
-        fileName: recipe.file_name,
-        loadSize: recipe.load_size,
-        machineType: recipe.machine_type,
+        file_name: recipe.file_name,
+        load_size: recipe.load_size,
+        machine_type: recipe.machine_type,
         finish: recipe.finish,
         recipe: recipe.recipe_no,
         fabric: recipe.fabric,
         fno: recipe.Fno,
       });
-      setChemicalOptions(recipe.step || []);
+      // setChemicalOptions(recipe.step || []);
       message.success('File uploaded successfully');
       setIsModalOpen(false);
     } catch (error) {

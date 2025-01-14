@@ -22,6 +22,7 @@ interface Chemical {
   boxes: string | null;
   unit_used: string | null;
   unit_conversion: number | null;
+  requirement: string | null;
 }
 
 interface ChemicalFormProps {
@@ -165,6 +166,7 @@ if(response.data.status === "200") {
               <th className="w-1/9 text-left text-xs text-black">Free</th>
               <th className="w-1/9 py-3 text-left text-xs text-black">On Order</th>
               <th className="w-1/9 py-3 text-left text-xs text-black">Total</th>
+              <th className="w-1/9 py-3 text-left text-xs text-black">Requirement</th>
               <th className="w-1/9 py-3  text-xs text-black">Order</th>
               <th className="w-1/9 py-3 text-left text-xs text-black">Boxes</th>
               <th className="w-1/9 py-3 text-left text-xs text-black">Unit Used</th>
@@ -179,6 +181,7 @@ if(response.data.status === "200") {
                 <td className="px-1 py-4"><span className='text-[#797FE7]'>{chemical.free}</span></td>
                 <td className="px-1 py-4 text-center"><span className='text-[#797FE7]'>{chemical.on_order}</span></td>
                 <td className="px py-4 text-center"><span className='text-[#797FE7]'>{chemical.total}</span></td>
+                <td className="px-4 py-4 "><span className='text-[#797FE7]'>{chemical.requirement}</span></td>
                 <td className="px-1 py-4 text-center">{chemical.order?.charAt(0)==="-"? <span className='text-[#f95b69]'>{chemical.order}</span>:<span className='text-[#797FE7]'>{chemical.order}</span>}</td>
                 <td className="px-1 py-4"><span className='text-[#797FE7]'>{chemical.boxes}</span></td>
                 <td className="px-1 py-4 text-center"><span className='text-[#797FE7]'>{chemical.unit_used}</span></td>

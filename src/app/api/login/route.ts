@@ -10,6 +10,7 @@ const JWT_SECRET = process.env.NEXT_PUBLIC_JWT_SECRET || "";
 export async function POST(request: NextRequest) {
   try {
     // Extract username and password from the request body
+    
     const body = await request.json();
     const { username, password } = body;
 
