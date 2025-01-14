@@ -310,7 +310,7 @@ const { Option } = Select;
 interface Props {
   userId?: string;
   logData?: any;
-  action: any;
+  action?: any;
 }
 
 const RecipeForm: React.FC<Props> = ({ userId, logData, action}) => {
