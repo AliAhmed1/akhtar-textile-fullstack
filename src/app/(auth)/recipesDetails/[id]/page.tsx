@@ -22,7 +22,8 @@ const date = new Date();
 const startDate = new Date(date.setUTCHours(0, 0, 0, 0));
 const endDate = new Date(date.setUTCHours(23, 59, 59, 999));
 console.log(">>>>",date);
-const data = await prisma.recipe_log.findMany({where:{recipeid:BigInt(id),created_at:{gte:startDate,lte:endDate}}});
+const recipe = await prisma.recipes.findUnique({where:{id:BigInt(id)}});
+const data = await prisma.recipe_log.findMany({where:{recipeFno:Number(recipe?.fno),created_at:{gte:startDate,lte:endDate}}});
 const actionData = await prisma.steps.findMany({select:{action:true},distinct:["action"]});
 const action = actionData.map((action) => {
   return {value: action.action, label: action.action}

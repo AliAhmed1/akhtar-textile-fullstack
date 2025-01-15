@@ -26,7 +26,7 @@ const RunRecipe: React.FC<RunRecipeProps> = ({ tableData, form, logData, userId 
     const runRecipe = async () => {
         console.log('check',form.getFieldValue("id"));
         const data = {
-            recipeid: form.getFieldValue("id"),
+            recipeFno: form.getFieldValue("fno"),
             status: "executed",
             userid: userId
         };
