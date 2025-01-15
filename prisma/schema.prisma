@@ -58,17 +58,16 @@ model history {
 }
 
 model recipes {
-  id           BigInt       @id(map: "recipe_pkey") @default(autoincrement())
-  created_at   DateTime     @default(now()) @db.Timestamp(6)
+  id           BigInt   @id(map: "recipe_pkey") @default(autoincrement())
+  created_at   DateTime @default(now()) @db.Timestamp(6)
   load_size    BigInt?
-  machine_type String?      @db.String(255)
-  finish       String?      @db.String(255)
-  fabric       String?      @db.String(255)
-  recipe       BigInt?      @unique(map: "unique_recipe_name")
-  fno          String?      @db.String(255)
-  name         String?      @db.String(255)
-  active_flag  String?      @db.String(255)
-  recipe_log   recipe_log[]
+  machine_type String?  @db.String(255)
+  finish       String?  @db.String(255)
+  fabric       String?  @db.String(255)
+  recipe       BigInt?  @unique(map: "unique_recipe_name")
+  fno          String?  @db.String(255)
+  name         String?  @db.String(255)
+  active_flag  String?  @db.String(255)
   steps        steps[]
 }
 
@@ -117,8 +116,7 @@ model recipe_log {
   id         BigInt   @id @default(autoincrement())
   created_at DateTime @default(now()) @db.Timestamp(6)
   status     String?  @db.String(255)
-  recipeid   BigInt?
+  recipeFno  BigInt?
   userid     BigInt?
-  recipes    recipes? @relation(fields: [recipeid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_recipe")
   users      users?   @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user")
 }
