@@ -335,7 +335,7 @@ interface Chemical {
 }
   interface StepData {
     key: string;
-    step: number;
+    step_no: number;
     action: string;
     minutes: number;
     liters: number;
@@ -345,6 +345,7 @@ interface Chemical {
     dosage: number;
     centigrade: number;
     chemicalId?: string;
+    chemicalAssociatedId?: string;
   }
 
   // const columns: ColumnsType<StepData> = [
@@ -490,7 +491,7 @@ interface Chemical {
     console.log("record>>>>>Before",record,value)
     console.log(index);
     if(value)
-    record.step = value;
+    record.step_no = value;
   const updatedData = [...tableData];
   setTableData(updatedData);
     
@@ -515,7 +516,7 @@ const handleChemicalChange = (record: StepData, value: string) => {
   const addStep = () => {
     const newStep: StepData = {
       key: String(tableData.length + 1),
-      step: 0,
+      step_no: 0,
       action: "",
       minutes: 0,
       liters: 0,
@@ -592,19 +593,20 @@ console.log("action", action);
               // console.log('step',step);
               const baseData = {
                 key: index.toString(),
-                step: step.step_no,
+                step_no: step.step_no,
                 action: step.action,
                 minutes: step.minutes,
-                liters: step.liters,
-                rpm: step.rpm,
-                centigrade: step.centigrade,
-                stepId: step.id,
+                liters: Number(step.liters),
+                rpm: Number(step.rpm),
+                centigrade: Number(step.centigrade),
+                id: step.id,
             };
 
               if(step.chemicals.length > 0) {
                 step.chemicals.forEach((chemical:any) => {
                   tableData.push({
                     ...baseData,
+                    chemicalAssociationId:chemical.id,
                     chemicalName:chemical.chemical_name,
                   percentage: chemical.percentage,
                   dosage: chemical.dosage,
@@ -767,7 +769,7 @@ useEffect(() => {
           <tbody>
             {tableData.map((item:StepData, index) => (
               <tr key={index}>
-                <td style={{ textAlign: "center"}}><InputNumber style={{ width: "50px" , textAlign: "center"}} value={item.step} onChange={(value) => handleStepChange(item, value,index)} /></td>
+                <td style={{ textAlign: "center"}}><InputNumber style={{ width: "50px" , textAlign: "center"}} value={item.step_no} onChange={(value) => handleStepChange(item, value,index)} /></td>
                 <td style={{ textAlign: "center"}}><Select showSearch  filterOption={true} style={{ width: "100%" }} value={item.action} onChange={(e) => handleActionChange(item, e)} options={action} onSearch={(value) => onSearch(value,item)}/></td>
                 <td style={{ textAlign: "center"}}><InputNumber style={{ width: "50px" , textAlign: "center"}} value={item.minutes} onChange={(value) => handleMinutesChange(item, value)} /></td>
                 <td style={{ textAlign: "center"}}><InputNumber style={{ width: "50px" , textAlign: "center"}} value={item.liters} onChange={(value) => handleLitersChange(item, value)} /></td>
@@ -796,6 +798,7 @@ useEffect(() => {
           form={form}
           setRecipe1={setRecipe1}
           logData={logData}
+          chemicalOptions={chemicalOptions}
         />
       </Modal>
     </div>

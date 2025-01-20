@@ -1,5 +1,5 @@
 // UploadData.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -12,10 +12,14 @@ interface UploadDataProps {
   form: any;
   setRecipe1: (recipe: any) => void;
   logData: any;
+  chemicalOptions: any[];
 }
 
-const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, form, setRecipe1, logData }) => {
+const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, form, setRecipe1, logData, chemicalOptions }) => {
   let pathname = usePathname();
+  useEffect(() => {
+    console.log("chemicalOptions",chemicalOptions);
+  },[])
   const handleUpload = async (file: File) => {
     form.resetFields()
     logData = {};
@@ -42,21 +46,25 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, f
         let data: any[] = [];
         recipe.step.forEach((step:any,index:number)=>{
           const baseData = {
-            key: index,
-            step: step.step_no,
+            key: index+1,
+            step_no: step.step_no.toString(),
             action: step.action,
-            minutes: step.minutes,
+            minutes: step.minutes.toString(),
             liters: step.litres,
             rpm: step.rpm,
             centigrade: step.temperature,
+            modified_action: step.modified_action
         };
           if(step.chemicals.length > 0) {
             step.chemicals.forEach((chemical:any) => {
+              const chemicalObj = chemicalOptions.find((option) => option.name === chemical.recipe_name);
+              console.log('chemicalObj',chemicalObj);
               data.push({
                 ...baseData,
                 chemicalName:chemical.recipe_name,
               percentage: chemical.percentage,
               dosage: chemical.dosage,
+              chemicalId:chemicalObj.id
               });
             })
           } else {
@@ -83,7 +91,7 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, f
         finish: recipe.finish,
         recipe: recipe.recipe_no,
         fabric: recipe.fabric,
-        fno: recipe.Fno,
+        fno: recipe.Fno.toString(),
       });
       // setChemicalOptions(recipe.step || []);
       message.success('File uploaded successfully');

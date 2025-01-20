@@ -3,6 +3,7 @@
 import React from 'react';
 import { Button, message } from 'antd';
 import axios from 'axios';
+import recipe from '@/app/(auth)/recipe/page';
 
 interface SaveDataProps {
   form: any;
@@ -14,14 +15,23 @@ const SaveData: React.FC<SaveDataProps> = ({ form, tableData, recipe1 }) => {
   const saveRecipe = async () => {
     console.log('check');
     try {
-      console.log('Recipe');
+      console.log('Recipe', recipe1);
       const values = form.getFieldsValue();
+      values.name = recipe1.file_name;
       console.log(values);
       console.log(tableData);
+      const newTableData = tableData.map((item: any) => {
+        let { key, ...rest } = item;
+        return { ...rest ,
+        step_id : key
+      };
+      });
+      // await Promise.all(newTableData);
+      console.log('newTableData',newTableData);
       const stepsObj = [];
       const recipeData = {
         ...values,
-        steps: tableData
+        steps: newTableData
         // steps: tableData.map((step, index) => {
         //   if(step.step === tableData[index+1].step){
 

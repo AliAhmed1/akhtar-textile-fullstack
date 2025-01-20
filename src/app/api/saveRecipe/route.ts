@@ -1,70 +1,143 @@
 import { Pool } from 'pg';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { steps } from '@prisma/client';
+// import { steps } from '@prisma/client';
 
 const pool = new Pool({ connectionString: process.env.NEXT_PUBLIC_DATABASE_URL });
 
 export async function POST(request: Request) {
-    const client = await pool.connect();
     try {
         const res = await request.json();
         
-        console.log("res====>>>>", res)
-        
-        // let recipe1 = {
-        //     fileName: res.fileName,
-        //     loadSize: res.loadSize,
-        //     machineType: res.machineType,
-        //     finish: res.finish,
-        //     fabric: res.fabric,
-        //     fno: res.fno,
-        //     recipe: res.recipe
-        // };
+        // console.log("res====>>>>", res)
+        let steps = res.steps;
+        console.log("steps====>>>>", steps);
+        let chemicals = steps.filter((step: any) => step.chemicalId)
+        .map((step: any) => {
+            // return{
+            // if(step.chemicalId){
+                return{
+                chemicalid: BigInt(step.chemicalId),
+                stepid: step.id,
+                dosage: step.dosage,
+                percentage: step.percentage,
+                id: step.chemicalAssociationId,
+                step_id: step.step_id
+            // }
+            }
 
+        });
+        console.log("chemicals====>>>>", chemicals);
+        steps = steps.map((step: any) => {
+            return{
+                id: step.id,
+                step_no: step.step_no,
+                action: step.action,
+                minutes: step.minutes,
+                liters: step.liters,
+                rpm: step.rpm,
+                centigrade: step.centigrade,
+                step_id: step.step_id
+            }
+        })
+        // console.log("steps====>>>>", steps);
+        // console.log("chemicals====>>>>", chemicals);
+        delete res.steps;
+        if(res?.id){
+        await prisma.recipes.upsert({
+            where:{ id: BigInt(res.id) },
+            update: res,
+            create: res
+        });
+console.log("check1",steps);
+        if (steps) {
+            console.log("check2");
+            const stepPromises = steps.map((step: any) => //seperate chemicals for fix
+                // console.log("check3");
+                  prisma.steps.upsert({
+                    where: { id: BigInt(step.id) },
+                    update: step,
+                    create: step
+                })
 
-        // let steps = res.steps;
-        
-        // await client.query('BEGIN');
+                // if (stepResult.id){
+                // console.log("stepResult", stepResult)
+                // }
+                // return stepResult;
+            )
+                await Promise.all(stepPromises);
+                const chemicalPromise = chemicals.map( (chemicals: any,index: number) => 
+                    chemicals[index] = {
+                        chemicalid: chemicals.chemicalid,
+                        stepid: BigInt(chemicals.stepid),
+                        dosage: chemicals.dosage,
+                        percentage: chemicals.percentage,
+                        id:BigInt(chemicals.id)
+                        // id: chemicals.id
+                    }
+                )
+                await Promise.all(chemicalPromise);
+                console.log("check5.3",chemicalPromise);
+                chemicals = null;
+                chemicals = chemicalPromise;
+                console.log("check 6")
+                const deletedChemicals = await prisma.chemical_association.deleteMany({where: {id: {in: chemicals.map((chemical:any) => chemical.id)}}});
+                console.log("check 7",deletedChemicals)
+                if(deletedChemicals.count>0){
+                    console.log("check 7.1")
+                    const newAssociation = await prisma.chemical_association.createMany({data: chemicals})
+                    console.log("check 8",newAssociation);
+                }
+            }
+        }
+        else{
+// console.log("check4");
+        const result = await prisma.recipes.create({
+            data: res
+        });
+        // console.log("check5");
+        if (steps) {
+            const stepPromises = steps.map((step: any) => 
+                 prisma.steps.create({
+                    data: {...step, recipesid: result.id}
+                })
+            )
+                await Promise.all(stepPromises);
+                const stepResults = await prisma.steps.findMany({where:{recipesid:BigInt(result.id)}});
+                // console.log("stepResults>>>>>>>>>>>>>>>>>>>>", stepResults[0]);
+                for (const stepResult of stepResults) {
+                    chemicals.forEach((chemical: any, index: number) => {
+                    if (Number(stepResult.step_id) === chemical.step_id) {
+                        chemicals[index].stepid = stepResult.id
+                    }
+                })
+            }
+            // console.log("check5.3",chemicals);
+            const chemicalPromise = chemicals.map( (chemicals: any,index: number) => 
+                chemicals[index] = {
+                    chemicalid: chemicals.chemicalid,
+                    stepid: chemicals.stepid,
+                    dosage: chemicals.dosage,
+                    percentage: chemicals.percentage,
+                    // id: chemicals.id
+                }
+            )
+            await Promise.all(chemicalPromise);
+            // console.log("check5.3",chemicalPromise);
+            chemicals = null;
+            chemicals = chemicalPromise;
+                const chemicalsResult = await prisma.chemical_association.createMany({
+                    data: chemicals
+                })
 
-        // const result = await client.query(
-        //     `INSERT INTO recipes (load_size, machine_type, finish, fabric, recipe, fno, name)
-        //      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-        //     [recipe1.loadSize, recipe1.machineType, recipe1.finish, recipe1.fabric, recipe1.recipe, recipe1.fno, recipe1.fileName]
-        // );
-        // const recipeId = result.rows[0].id;
-        
-        // for (const step of steps) {
-        //     console.log("", step)
-        //     const stepResult = await client.query(
-        //         `INSERT INTO steps (action, liters, rpm, centigrade, ph, tds, tss, recipesid, step_no, minutes)
-        //          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id`,
-        //         [step.action, step.litres, step.rpm, step.temperature, step.ph, step.tds, step.tss, recipeId, step.step_no, step.minutes]
-        //     );
-        //     const stepId = stepResult.rows[0].id;
-
-        //     for (const chemical of step.chemicals) {
-                
-        //         const chemicalResult = await client.query(
-        //             `INSERT INTO chemicals (name)
-        //              VALUES ($1) RETURNING id`, 
-        //             [chemical.recipe_name]
-        //         );
-        //         const chemicalId = chemicalResult.rows[0].id;
-        //         await client.query(
-        //             `INSERT INTO chemical_association (stepid, chemicalid, percentage, dosage)
-        //              VALUES ($1, $2, $3, $4)`,
-        //             [stepId, chemicalId, chemical.percentage, chemical.dosage]
-        //         ); 
-        //     }
-        // }
-
-        // await client.query('COMMIT');
+        }
+    }
         return NextResponse.json({ success: true });
     } catch (error) {
-        await client.query('ROLLBACK');
         console.error('Error saving recipe data:', error);
         return NextResponse.json({ success: false, message: 'Failed to save recipe data' });
     } finally {
-        client.release();
     }
 }
 

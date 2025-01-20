@@ -46,6 +46,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
           rpm: step.rpm?.toString(),
           centigrade: step.centigrade?.toString(),
           chemicals: chemicals.map(chemical => ({
+            id: chemical.id.toString(),
             step_id: chemical.stepid?.toString(),
             chemical_id: chemical.chemicalid?.toString(),
             chemical_name: chemical.chemicals?.name,
