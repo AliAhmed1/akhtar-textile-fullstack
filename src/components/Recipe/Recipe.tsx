@@ -557,7 +557,7 @@ for (let i = 0; i < batch.length; i++) {
   };
 
   const filteredRecipes = recipes.filter(recipe =>
-    recipe.name.toLowerCase().includes(searchTerm.toLowerCase())
+    recipe?.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
 

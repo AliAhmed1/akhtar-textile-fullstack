@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   console.log('Received request for ID:', params.id);
-
+// This APi is not being used
   const { id } = params;
 
   try {
@@ -21,6 +21,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       where:{recipesid:BigInt(id)},
       select:{id: true, created_at: true, action: true, liters: true, rpm: true, centigrade: true, ph: true, lr: true, tds: true, tss: true, step_no: true, minutes: true, step_id: true}
     })
+    stepsResult.sort((a, b) => Number(a.step_id) - Number(b.step_id));
 
     // Fetch chemical associations and chemicals
     const chemicalsResult = await prisma.chemical_association.findMany({
@@ -46,6 +47,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
           rpm: step.rpm?.toString(),
           centigrade: step.centigrade?.toString(),
           chemicals: chemicals.map(chemical => ({
+            id: chemical.id.toString(),
             step_id: chemical.stepid?.toString(),
             chemical_id: chemical.chemicalid?.toString(),
             chemical_name: chemical.chemicals?.name,

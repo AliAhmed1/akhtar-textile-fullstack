@@ -1,5 +1,5 @@
 // UploadData.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -12,10 +12,14 @@ interface UploadDataProps {
   form: any;
   setRecipe1: (recipe: any) => void;
   logData: any;
+  chemicalOptions: any[];
 }
 
-const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, form, setRecipe1, logData }) => {
+const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, form, setRecipe1, logData, chemicalOptions }) => {
   let pathname = usePathname();
+  useEffect(() => {
+    console.log("chemicalOptions",chemicalOptions);
+  },[])
   const handleUpload = async (file: File) => {
     form.resetFields()
     logData = {};
@@ -40,24 +44,31 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, f
  
       const recipesDataForTable = () => {
         let data: any[] = [];
+        let counter = 0;
         recipe.step.forEach((step:any,index:number)=>{
           const baseData = {
-            key: index,
-            step: step.step_no,
+            key: counter,
+            step_no: step.step_no.toString(),
             action: step.action,
-            minutes: step.minutes,
+            minutes: step.minutes.toString(),
             liters: step.litres,
             rpm: step.rpm,
             centigrade: step.temperature,
+            modified_action: step.modified_action
         };
           if(step.chemicals.length > 0) {
             step.chemicals.forEach((chemical:any) => {
+              const chemicalObj = chemicalOptions.find((option) => option.name === chemical.recipe_name);
+              console.log('chemicalObj',chemicalObj);
+              baseData.key = counter;
               data.push({
                 ...baseData,
                 chemicalName:chemical.recipe_name,
               percentage: chemical.percentage,
               dosage: chemical.dosage,
+              chemicalId:chemicalObj.id
               });
+              counter++;
             })
           } else {
              data.push({
@@ -66,14 +77,16 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, f
               percentage: step.chemical,
               dosage: step.chemical,
              });
+             counter++;
             }
             
           })
+          console.log("data",data);
         return data
 
       }
 
-
+      
       console.log(recipesDataForTable);
       setTableData(recipesDataForTable);
       form.setFieldsValue({
@@ -83,7 +96,7 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, f
         finish: recipe.finish,
         recipe: recipe.recipe_no,
         fabric: recipe.fabric,
-        fno: recipe.Fno,
+        fno: recipe.Fno.toString(),
       });
       // setChemicalOptions(recipe.step || []);
       message.success('File uploaded successfully');
