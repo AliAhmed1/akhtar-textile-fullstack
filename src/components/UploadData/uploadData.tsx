@@ -44,9 +44,10 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, f
  
       const recipesDataForTable = () => {
         let data: any[] = [];
+        let counter = 0;
         recipe.step.forEach((step:any,index:number)=>{
           const baseData = {
-            key: index+1,
+            key: counter,
             step_no: step.step_no.toString(),
             action: step.action,
             minutes: step.minutes.toString(),
@@ -59,6 +60,7 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, f
             step.chemicals.forEach((chemical:any) => {
               const chemicalObj = chemicalOptions.find((option) => option.name === chemical.recipe_name);
               console.log('chemicalObj',chemicalObj);
+              baseData.key = counter;
               data.push({
                 ...baseData,
                 chemicalName:chemical.recipe_name,
@@ -66,6 +68,7 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, f
               dosage: chemical.dosage,
               chemicalId:chemicalObj.id
               });
+              counter++;
             })
           } else {
              data.push({
@@ -74,14 +77,16 @@ const UploadData: React.FC<UploadDataProps> = ({ setTableData, setIsModalOpen, f
               percentage: step.chemical,
               dosage: step.chemical,
              });
+             counter++;
             }
             
           })
+          console.log("data",data);
         return data
 
       }
 
-
+      
       console.log(recipesDataForTable);
       setTableData(recipesDataForTable);
       form.setFieldsValue({

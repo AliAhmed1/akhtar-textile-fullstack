@@ -334,7 +334,7 @@ interface Chemical {
   name: string;
 }
   interface StepData {
-    key: string;
+    key: number;
     step_no: number;
     action: string;
     minutes: number;
@@ -348,91 +348,11 @@ interface Chemical {
     chemicalAssociatedId?: string;
   }
 
-  // const columns: ColumnsType<StepData> = [
-  //   {
-  //     title: "Step",
-  //     dataIndex: "step",
-  //     key: "step",
-  //     render: (text,record) => <InputNumber min={0} max={100} defaultValue={text} style={{ width: "70%" }} onChange={(text) => handleStepChange(record,text)}/>,
-  //   },
-  //   {
-  //     title: "Action",
-  //     dataIndex: "action",
-  //     key: "action",
-  //     render: (text, record) => <Input defaultValue={text}  onChange={(e) => handleActionChange(record, e.target.value)}/>,
-  //   },
-  //   {
-  //     title: "Minutes",
-  //     dataIndex: "minutes",
-  //     key: "minutes",
-  //     render: (text, record) => <InputNumber min={0} max={100} defaultValue={text} style={{ width: "70%" }} onChange={(value) => handleMinutesChange(record, value)}/>,
-  //   },
-  //   {
-  //     title: "Liters",
-  //     dataIndex: "liters",
-  //     key: "liters",
-  //     render: (text, record) => <InputNumber min={0} max={100} defaultValue={text} style={{ width: "85%" }} onChange={(value) => handleLitersChange(record, value)}/>,
-  //   },
-  //   {
-  //     title: "RPM",
-  //     dataIndex: "rpm",
-  //     key: "rpm",
-  //     render: (text, record) => <InputNumber min={0} max={100} defaultValue={text} style={{ width: "65%" }} onChange={(value) => handleRpmChange(record, value)}/>,
-  //   },
-  //   {
-  //     title: "Chemical Name",
-  //     dataIndex: "chemicalName",
-  //     key: "chemicalName",
-  //     render: (text, record) => (
-  //       <Select defaultValue={text} style={{ width: 200 }}  onChange={(value) => handleChemicalChange(record, value)}>
-  //         {chemicalOptions.map((option) => (
-  //           <Option key={option.name} value={option.name}>
-  //             {option.name}
-  //           </Option>
-  //         ))}
-  //       </Select>
-  //     ),
-  //   },
-  //   {
-  //     title: "%",
-  //     dataIndex: "percentage",
-  //     key: "percentage",
-  //     render: (text, record) => <InputNumber min={0} max={100} defaultValue={text} style={{ width: "100%" }} onChange={(value) => handlePercentageChange(record, value)}/>,
-  //   },
-  //   {
-  //     title: "Dosage",
-  //     dataIndex: "dosage",
-  //     key: "dosage",
-  //     render: (text, record) => <InputNumber min={0} defaultValue={text} style={{ width: 60 }} onChange={(value) => handleDosageChange(record, value)}/>,
-  //   },
-  //   {
-  //     title: "Centigrade",
-  //     dataIndex: "centigrade",
-  //     key: "centigrade",
-  //     render: (text, record) => <InputNumber min={0} defaultValue={text} style={{ width: 50 }} onChange={(value) => handleCentigradeChange(record, value)} />,
-  //   },
-  //   {
-  //     title: "Action",
-  //     key: "action",
-  //     render: (_, record) => (
-  //       <Space size="middle">
-  //         <a onClick={() => onDelete(record)}>Delete</a>
-  //         </Space>
-  //     ),
-  //   },
-  // ];
-
+ 
   const onDelete = (record: StepData) => {
-    console.log("record>>>>>",record);
-    const updatedData = tableData.filter((item) => item.key !== record.key).map((item,index) => ({...item,key:index.toString()}));
-    console.log("updatedData>>>>",updatedData)
-// const updatedData
-    // tableData.splice(record.key, 1);
-    // console.log("updatedData>>>>",tableData)
-    // const updatedData = tableData;
-    // updatedData.forEach((item, index) => (item.key = index));
+    const updatedData = tableData.filter((item) => item.key !== record.key).map((item,index) => ({...item,key:index}));
     setTableData(updatedData);
-    console.log("updatedData2>>>>",tableData)  }
+  }
 
     const onSearch = (value: string,item: StepData) => {
       if(value)
@@ -442,8 +362,6 @@ interface Chemical {
       
     };
   const handleActionChange = (record: StepData, value: string ) => {
-    // const update = actionOptions.filter((option) => value.includes(option.name));
-    console.log("update>>>",value);
     record.action = value;
     const updatedData = [...tableData];
     setTableData(updatedData);
@@ -461,13 +379,10 @@ interface Chemical {
     setTableData(updatedData);
   }
   const handleRpmChange = (item: StepData, value: number | null) => {
-    console.log("fgdfd",value)
     if(value)
     item.rpm = value;
     const updatedData = [...tableData];
   setTableData(updatedData);
-    // console.log("fgdfd>>",item.rpm);
-    // record.rpm = value
   }
   const handlePercentageChange = (record: StepData, value: number | null) => {
     if(value)
@@ -488,22 +403,17 @@ interface Chemical {
   setTableData(updatedData);
   }
   const handleStepChange = ( record: StepData,value: number | null, index:number) => {
-    console.log("record>>>>>Before",record,value)
-    console.log(index);
     if(value)
     record.step_no = value;
   const updatedData = [...tableData];
   setTableData(updatedData);
-    
-    console.log("record>>>>>After",tableData)
   }
 const handleChemicalChange = (record: StepData, value: string) => {
   const update = chemicalOptions.filter((option) => value.includes(option.name));
-  console.log("update>>>>>",update)
-  console.log("record>>>>>Before",record)
   record.chemicalName = value;
   update.length > 0? record.chemicalId = update[0].id:record.chemicalId = "";
-  console.log("record>>>>>After",record)
+  const updatedData = [...tableData];
+  setTableData(updatedData);
 }
   const showModal = () => {
     setIsModalOpen(true);
@@ -515,7 +425,7 @@ const handleChemicalChange = (record: StepData, value: string) => {
 
   const addStep = () => {
     const newStep: StepData = {
-      key: String(tableData.length + 1),
+      key: tableData.length,
       step_no: 0,
       action: "",
       minutes: 0,
@@ -550,18 +460,18 @@ const handleChemicalChange = (record: StepData, value: string) => {
     }
   };
 
-  useEffect(() => {
-console.log(">>>>>>>>>>>>",tableData);
-console.log("action", action);
-// fetchChemicals();
-  },[tableData])
+//   useEffect(() => {
+// console.log(">>>>>>>>>>>>",tableData);
+// console.log("action", action);
+// // fetchChemicals();
+//   },[tableData])
   // useEffect(() => {
     const fetchRecipe = async (id: string) => {
       setLoading(true);
       try {
         const response = await fetch(`/api/getRecipeDetails/${id}`);
         const data = await response.json();
-        console.log('data',data);
+        // console.log('data',data);
         if (response.ok) {
           setRecipe1(data);
 
@@ -575,24 +485,15 @@ console.log("action", action);
             fno: data.fno,
           });
 
-          // const recipesDataForTable = data.steps.map((step: any, index: number) => ({
-          //   key: index,
-          //   step: step.step_no,
-          //   action: step.action,
-          //   minutes: step.minutes,
-          //   centigrade: step.centigrade,
-          //   liters: step.liters,
-          //   rpm: step.rpm,
-          //   chemicalName: step.chemicals.map((chemical: any) => chemical.chemical_name),
-          //   percentage: step.chemicals.map((chemical: any) => chemical.percentage),
-          //   dosage: step.chemicals.map((chemical: any) => chemical.dosage),
-          // }));
+      
           const recipesDataForTable = () => {
             let tableData: any[] = [];
+            let counter = 0;
+
             data.steps.forEach((step:any,index:number)=>{
-              // console.log('step',step);
+          
               const baseData = {
-                key: index.toString(),
+                key: counter,
                 step_no: step.step_no,
                 action: step.action,
                 minutes: step.minutes,
@@ -603,7 +504,9 @@ console.log("action", action);
             };
 
               if(step.chemicals.length > 0) {
-                step.chemicals.forEach((chemical:any) => {
+                step.chemicals.forEach((chemical:any,index:number) => {
+ 
+                  baseData.key = counter;
                   tableData.push({
                     ...baseData,
                     chemicalAssociationId:chemical.id,
@@ -612,23 +515,24 @@ console.log("action", action);
                   dosage: chemical.dosage,
                   chemicalId: chemical.chemical_id,
                   });
+                  counter++;
                 });
               } else {
+
                  tableData.push({
                   ...baseData,
                   chemicalName:step.chemical,
                   percentage: step.chemical,
                   dosage: step.chemical,
                  });
+                 counter++;
                 }
                 
               })
-              // console.log('tableData',tableData);
+ 
             return tableData;
     
           }
-         
-          
           setTableData(recipesDataForTable);
         } else {
           setError(data.message || "Error fetching recipe");
@@ -655,16 +559,7 @@ console.log("action", action);
   }, [pathname, form]);
 useEffect(() => {
   fetchChemicals();
-  console.log("fetchChemicals");
 },[])
-  // useEffect(() => {
-  //   console.log("form:", form.getFieldValue("id"));
-  //   console.log("userId:", userId)
-  //   console.log("logData:", logData)
-  //   console.log("tableData:", tableData);
-  //   console.log("data>>>>", chemicalOptions);
-  //   fetchChemicals();
-  // }, [tableData]);
 
   if (loading) {
     return (

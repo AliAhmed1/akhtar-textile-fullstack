@@ -21,6 +21,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       where:{recipesid:BigInt(id)},
       select:{id: true, created_at: true, action: true, liters: true, rpm: true, centigrade: true, ph: true, lr: true, tds: true, tss: true, step_no: true, minutes: true, step_id: true}
     })
+    stepsResult.sort((a, b) => Number(a.step_id) - Number(b.step_id));
 
     // Fetch chemical associations and chemicals
     const chemicalsResult = await prisma.chemical_association.findMany({
