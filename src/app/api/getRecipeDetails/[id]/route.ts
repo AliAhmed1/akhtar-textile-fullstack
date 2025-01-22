@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   console.log('Received request for ID:', params.id);
-
+// This APi is not being used
   const { id } = params;
 
   try {

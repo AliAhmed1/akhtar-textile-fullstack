@@ -20,9 +20,9 @@ const config: Config = {
       },
     },
     screens: {
-      'xl': '1920px',
-      'lg': '1600px',
-      'md': '1280px',
+      'xl': '1920px',  // 1920 x 1080 screen
+      'lg': '1600px',      //1600 x 900 screen
+      'md': '1280px',      //1280 x 1024 screen
       // 'sm': '900px',
 
     }
