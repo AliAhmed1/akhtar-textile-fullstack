@@ -25,7 +25,7 @@ const Dashboard: React.FC<DashboardProps> = ({ recentRecipes, damcoExecuteSucces
      <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '15px', marginTop:'10px' }}>
       <>
     { recentRecipes.map((recipe: any, index: number) => (
-     <Space size={16} wrap style={{ marginBottom: "5px" }}>
+     <Space size={16} wrap style={{ marginBottom: "5px" }} key={index}>
      <Avatar size={40} style={{ backgroundColor: index===0 ? '#fde3cf': index===1 ?'#E7EDFF' : '#e9d9f7', color: '#718EBF' }}>{index + 1}</Avatar>
      <div> 
      <span style={{  fontWeight: "bold", color: '#232323',position: 'relative', top: '-1px' }}>{recipe.title}</span>
@@ -44,7 +44,7 @@ const Dashboard: React.FC<DashboardProps> = ({ recentRecipes, damcoExecuteSucces
     <>
     {
       damcoExecuteSuccess.map((record: any, index: number) => (
-     <Space size={16} wrap style={{ marginBottom: "5px" }}>
+     <Space size={16} wrap style={{ marginBottom: "5px" }} key={index}>
      <Avatar size={40} style={{ backgroundColor: index===0 ? '#e9d9f7': index===1 ?'#E7EDFF' : '#fde3cf', color: '#718EBF' }}>{index+1}</Avatar>
      <div> 
      <span style={{  fontWeight: "bold", color: '#232323',position: 'relative', top: '-1px' }}>{record.country} {record.po_number}</span>
@@ -64,7 +64,7 @@ const Dashboard: React.FC<DashboardProps> = ({ recentRecipes, damcoExecuteSucces
     <>
     {
       nexusSuccess.map((record: any, index: number) => (
-     <Space size={16} wrap style={{ marginBottom: "5px" }}>
+     <Space size={16} wrap style={{ marginBottom: "5px" }} key={index}>
      <Avatar size={40} style={{ backgroundColor: index===0 ? '#fde3cf': index===1 ?'#E7EDFF' : '#e9d9f7', color: '#718EBF' }}>{index+1}</Avatar>
      <div> 
      <span style={{  fontWeight: "bold", color: '#232323',position: 'relative', top: '-1px' }}>{record.booking_number} {record.invoice_number}</span>
