@@ -120,3 +120,104 @@ model recipe_log {
   userid     BigInt?
   users      users?   @relation(fields: [userid], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_user")
 }
+
+model dmc_ammend_failed_records {
+  id             BigInt    @id @default(autoincrement())
+  po_number      String?
+  plan_hod       String?
+  country        String?
+  order_qty      String?
+  carton_qty     String?
+  gross_weight   String?
+  carton_cbm     String?
+  ctn_type       String?
+  booking_id     String?
+  booking_status String?
+  timestamp      DateTime? @db.Timestamp(6)
+}
+
+model dmc_ammend_success_records {
+  id             BigInt    @id @default(autoincrement())
+  po_number      String?
+  plan_hod       String?
+  country        String?
+  order_qty      String?
+  carton_qty     String?
+  gross_weight   String?
+  carton_cbm     String?
+  ctn_type       String?
+  booking_id     String?
+  booking_status String?
+  timestamp      DateTime? @db.Timestamp(6)
+}
+
+model dmc_failed_records {
+  id             BigInt    @id @default(autoincrement())
+  po_number      String?
+  plan_hod       String?
+  country        String?
+  order_qty      String?
+  carton_qty     String?
+  gross_weight   String?
+  carton_cbm     String?
+  ctn_type       String?
+  booking_id     String?
+  booking_status String?
+  timestamp      DateTime? @db.Timestamptz(6)
+}
+
+model dmc_success_records {
+  id             BigInt   @id @default(autoincrement())
+  po_number      String?
+  plan_hod       String?
+  country        String?
+  order_qty      String?
+  carton_qty     String?
+  gross_weight   String?
+  carton_cbm     String?
+  ctn_type       String?
+  booking_id     String?
+  booking_status String?
+  timestamp      DateTime @db.Timestamptz(6)
+  rowid          BigInt   @default(autoincrement())
+}
+
+model nxs_failed_records {
+  id                                 BigInt    @id @default(autoincrement())
+  po_number                          BigInt?
+  assign_equipment_id                String?   @db.String(50)
+  booking_number                     String?   @db.String(50)
+  shipment_load_type                 String?   @db.String(200)
+  invoice_number                     String?
+  bill_waybill                       String?   @db.String(50)
+  carrier                            String?   @db.String(50)
+  updated_transload_location_us_only String?   @db.String(50)
+  estimated_departure_date           DateTime? @db.Date
+  equipment_number_type              String?   @db.String(50)
+  seal_number                        BigInt?
+  ctn_qty                            BigInt?
+  units                              BigInt?
+  route_number                       BigInt?
+  status                             String?
+  timestamp                          DateTime? @db.Timestamp(6)
+}
+
+model nxs_success_records {
+  id                                 BigInt    @id @default(autoincrement())
+  po_number                          BigInt?
+  assign_equipment_id                String?   @db.String(50)
+  booking_number                     String?   @db.String(50)
+  shipment_load_type                 String?   @db.String(200)
+  invoice_number                     String?
+  bill_waybill                       String?   @db.String(50)
+  carrier                            String?   @db.String(50)
+  updated_transload_location_us_only String?   @db.String(50)
+  estimated_departure_date           DateTime? @db.Date
+  equipment_number_type              String?   @db.String(50)
+  seal_number                        BigInt?
+  ctn_qty                            BigInt?
+  units                              BigInt?
+  route_number                       BigInt?
+  status                             String?
+  timestamp                          DateTime? @db.Timestamp(6)
+}

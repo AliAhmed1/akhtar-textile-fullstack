@@ -452,7 +452,7 @@ const handleMenuClick = async (e: { key: string }) => {
 
 
 <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '15px', }}>
-  {loading || response!=="null" ?  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+  {loading  ?  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
   <Spin indicator={<LoadingOutlined spin />} size="large" />
 </div>
 
