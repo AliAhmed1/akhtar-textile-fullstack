@@ -113,3 +113,9 @@ body {
 .customButton:hover{
   background-color: #656ED3 !important;
 }
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

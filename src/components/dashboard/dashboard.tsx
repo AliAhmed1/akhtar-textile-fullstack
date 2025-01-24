@@ -10,8 +10,9 @@ interface DashboardProps {
   recentRecipes: any[];
   damcoExecuteSuccess: any[];
   nexusSuccess:any[];
+  chemicals: any[];
 }
-const Dashboard: React.FC<DashboardProps> = ({ recentRecipes, damcoExecuteSuccess, nexusSuccess}) => {
+const Dashboard: React.FC<DashboardProps> = ({ recentRecipes, damcoExecuteSuccess, nexusSuccess, chemicals}) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState<boolean>(true);
   const pageLoadingSpinner = <LoadingOutlined style={{ fontSize: 48, color: '#800080' }} spin />;
@@ -79,11 +80,93 @@ const Dashboard: React.FC<DashboardProps> = ({ recentRecipes, damcoExecuteSucces
      </Col>
 
    </Row>
+   {/* <Space size={16} style={{ marginTop: "20px" }}></Space> */}
+<Row style={{ marginTop: "20px" }} gutter={[24 , 24]}>
+  <Col span={8}>
+  <h1 style={{ color: '#343C6A', fontSize: "20px", fontWeight: "bold" }}>Chemical On Order</h1>
+  <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '15px', marginTop:'10px',maxHeight: '200px' }}>
+    <div className='flex gap-[9rem] mb-1'>
+      <strong>Chemicals</strong>
+      <strong>On Order</strong>
+    </div>
+    <div className='hide-scrollbar overflow-y-auto max-h-[135px]'>
+    <table className='w-full'>
+      <thead>
+        <tr >
+          <th  className='text-left'></th>
+          <th></th>
+          <th className='text-left'></th>
+        </tr>
+      </thead> 
+      <tbody>   
+  <>
+  {
+    chemicals.filter((chemical: any) => Number(chemical.on_order) > 0).map((chemical: any, index: number) => (
+      
+  // <Space size={16} style={{ marginBottom: "5px" }}>
+    <tr key= {index} >
+      <td >{trimText(chemical.name,15)}</td>
+      <td></td>
+      <td className='text-left'>{chemical.on_order}{chemical.unit_used === "NA"? "": " "+chemical.unit_used}</td>
+    </tr>
+  // </Space>
+  ))
+  }
+  </>
+  </tbody>
+  </table>
+  </div>
+  </div>
+  </Col>
+  <Col span={16}>
+  <h1 style={{ color: '#343C6A', fontSize: "20px", fontWeight: "bold" }}>Chemical Inventory</h1>
+  <div style={{ padding: '20px', backgroundColor: 'white', borderRadius: '15px', marginTop:'10px',maxHeight: '200px' }}>
+    <div className='flex mb-1'>
+      <strong>Chemicals</strong>
+      <strong className='ml-[19rem]'>Total</strong>
+      <strong className='ml-[7rem]'>Boxes</strong>
+    </div>
+    <div className='hide-scrollbar overflow-y-auto max-h-[135px]'>
+    <table className='w-full'>
+      <thead>
+        <tr >
+          <th  className='text-left'></th>
+          <th></th>
+          <th className='text-left'></th>
+        </tr>
+      </thead> 
+      <tbody>   
+  <>
+  {
+    chemicals.filter((chemical: any) => chemical.total !=="0" && chemical.on_order !== 'null').map((chemical: any, index: number) => (
 
-   <div>
+  // <Space size={16} style={{ marginBottom: "5px" }}>
+    <tr key= {index} >
+      <td >{trimText(chemical.name,17)}</td>
+      <td className='text-left'>{chemical.total} {chemical.unit_used === "NA" || chemical.unit_used === "null"? "-": chemical.unit_used}</td>
+      <td>{chemical.boxes}</td>
+    </tr>
+  // </Space>
+  ))
+  }
+  </>
+  </tbody>
+  </table>
+  </div>
+  </div>
+  </Col>
+
+   {/* <div> */}
+
+    {/* <Graphs /> */}
+   {/* </div> */}
+   </Row>
+   <Row style={{ marginTop: "20px" }} gutter={[24 , 24]}>
+       <div>
 
     <Graphs />
    </div>
+   </Row>
     </div>
 
 
